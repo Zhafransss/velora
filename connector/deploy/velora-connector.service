@@ -1,0 +1,38 @@
+# systemd unit for the Velora WhatsApp connector (Ubuntu).
+# Install: sudo cp deploy/velora-connector.service /etc/systemd/system/
+#          sudo systemctl daemon-reload && sudo systemctl enable --now velora-connector
+#
+# Assumptions (adjust to your VPS):
+#   - app code in /var/www/velora, connector in /var/www/velora/connector
+#   - dedicated system user: sudo useradd --system --home /var/lib/velora --shell /usr/sbin/nologin velora
+#   - auth state in /var/lib/velora/auth (set AUTH_DIR in .env), included in off-server backups
+#   - .env readable only by the service user: chmod 600, chown velora
+
+[Unit]
+Description=Velora WhatsApp connector (Baileys)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=velora
+Group=velora
+WorkingDirectory=/var/www/velora/connector
+EnvironmentFile=/var/www/velora/connector/.env
+ExecStart=/usr/bin/node src/index.js
+Restart=always
+RestartSec=5
+
+# NFR-008: a leak in the connector must not take the website down.
+MemoryHigh=1200M
+MemoryMax=1500M
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/velora
+
+[Install]
+WantedBy=multi-user.target

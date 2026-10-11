@@ -15,11 +15,11 @@ Rujukan: `docs/SRS.md`. Status: Not Started → In Progress → Done (atau Defer
 | FR-006 | BG-02 | Konfigurasi AI: persona, bahasa, pesan pembuka, fallback | AI | M | 2 | Not Started | TC-AIC-01..02 |
 | FR-007 | BG-02, BG-03, BG-05 | AI gateway Gemini + Groq, timeout, retry, fallback, pencatatan token | AI | M | 2 | Not Started | TC-GW-01 (timeout), TC-GW-02 (respons invalid), TC-GW-03 (fallback provider), TC-GW-04 (rate limit provider) |
 | FR-008 | BG-02, BG-06 | Tes chatbot di dashboard, usage uji terpisah | Chat/AI | M | 2 | Not Started | TC-TEST-01..02, TC-ACC-01 (uji akurasi ≥ 90%) |
-| FR-009.1 | BG-03, BG-06 | Konektor Baileys multi-session, auth state per channel (creds + Signal keys) | Channels/WhatsApp | M | 0 | Not Started | WA-MT-01 |
-| FR-009.2 | BG-06 | Pairing QR oleh tenant, QR tidak masuk log | Channels/WhatsApp, Dashboard | M | 0, 3 | Not Started | WA-MT-06 |
-| FR-009.3 | BG-03, BG-04 | Pesan masuk dipetakan ke channel/tenant terverifikasi, dideduplikasi | Channels/WhatsApp | M | 0, 3 | Not Started | WA-MT-02, WA-MT-05 |
-| FR-009.4 | BG-04 | Balasan keluar hanya lewat channel milik percakapan | Channels/WhatsApp | M | 0, 3 | Not Started | WA-MT-03 |
-| FR-009.5 | BG-03 | Reconnect dengan backoff; status koneksi dibedakan | Channels/WhatsApp | M | 0 | Not Started | WA-MT-04 |
+| FR-009.1 | BG-03, BG-06 | Konektor Baileys multi-session, auth state per channel (creds + Signal keys) | Channels/WhatsApp | M | 0 | In Progress | WA-MT-01 |
+| FR-009.2 | BG-06 | Pairing QR oleh tenant, QR tidak masuk log | Channels/WhatsApp, Dashboard | M | 0, 3 | In Progress | WA-MT-06 |
+| FR-009.3 | BG-03, BG-04 | Pesan masuk dipetakan ke channel/tenant terverifikasi, dideduplikasi | Channels/WhatsApp | M | 0, 3 | In Progress | WA-MT-02, WA-MT-05 |
+| FR-009.4 | BG-04 | Balasan keluar hanya lewat channel milik percakapan | Channels/WhatsApp | M | 0, 3 | In Progress | WA-MT-03 |
+| FR-009.5 | BG-03 | Reconnect dengan backoff; status koneksi dibedakan | Channels/WhatsApp | M | 0 | In Progress | WA-MT-04 |
 | FR-009.6 | BG-04 | Pencabutan channel menutup koneksi dan menghapus kredensial | Channels/WhatsApp | M | 3 | Not Started | WA-MT-07 |
 | FR-009.7 | BG-03 | Mitigasi blokir: hanya balas pesan masuk, jeda acak, batas laju | Channels/WhatsApp | M | 3 | Not Started | TC-WA-RATE-01 |
 | FR-009.8 | BG-03 | Interface `WhatsAppChannelAdapter` dapat diganti | Channels/WhatsApp | S | 3 | Not Started | WA-MT-08 |
@@ -73,3 +73,4 @@ Lihat `docs/SRS.md` bagian 9 (OQ-01 s/d OQ-10).
 | Tanggal | Perubahan |
 |---------|-----------|
 | 2026-10-11 | RTM dibuat dari PRD V1.0 dan keputusan diskusi. Seluruh item Not Started; FR-010 Deferred. |
+| 2026-10-11 | Tahap 0 dimulai (branch `feature/poc-baileys`): kerangka konektor `connector/` selesai. FR-009.1–.5 menjadi In Progress. Terverifikasi lokal: 3 socket paralel menghasilkan 3 QR berbeda, token dan validasi `channelId` bekerja. **Belum terverifikasi dengan nomor sungguhan di VPS**, sehingga belum ada yang Done. |
