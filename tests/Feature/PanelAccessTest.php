@@ -3,9 +3,6 @@
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 it('allows platform admins to access the admin panel', function () {
     $admin = User::factory()->platformAdmin()->create();

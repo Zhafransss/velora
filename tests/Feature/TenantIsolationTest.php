@@ -5,12 +5,9 @@ use App\Models\TenantMember;
 use App\Models\User;
 use App\Support\Tenancy\CurrentTenant;
 use App\Support\Tenancy\TenancyException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\TenantNote;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Schema::create('tenant_notes', function ($table) {

@@ -6,10 +6,7 @@ use App\Models\Tenant;
 use App\Models\TenantMember;
 use App\Models\User;
 use App\Support\Tenancy\CurrentTenant;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 function tenantUser(string $role = 'owner', ?Tenant $tenant = null): array
 {

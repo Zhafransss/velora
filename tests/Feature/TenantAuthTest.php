@@ -5,12 +5,9 @@ use App\Models\TenantMember;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
-
-uses(RefreshDatabase::class);
 
 function registrationPayload(array $override = []): array
 {

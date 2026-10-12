@@ -29,7 +29,7 @@ Rujukan: `docs/SRS.md`. Status: Not Started → In Progress → Done (atau Defer
 | FR-013 | BG-06 | Dashboard tenant `/app` (Blade + Livewire) | Dashboard | M | 1–3 | In Progress (kerangka + dashboard + profil bisnis; fitur lain menyusul) | TC-DASH-01..04 |
 | FR-014 | BG-01, BG-05 | Filament admin: tenant, plan, subscription, usage, failed jobs, audit | Admin | M | 4 | Not Started | TC-ADM-01..03 |
 | FR-015 | BG-03 | Queue, retry, idempotency, failed-job handling, request ID | Reliability | M | 3–4 | Not Started | TC-REL-01..03 |
-| FR-016 | BG-03, BG-04 | Suite Pest: isolasi tenant dan kuota memblokir deploy | Testing | M | 1–4 | Not Started | (meta; lihat seluruh TC) |
+| FR-016 | BG-03, BG-04 | Suite Pest: isolasi tenant dan kuota memblokir deploy | Testing | M | 1–4 | In Progress (82 test lulus; CI GitHub Actions ditambahkan; kuota, AI, konektor menyusul) | (meta; lihat seluruh TC) |
 | FR-017 | BG-07 | Migrasi website ke VPS, cutover DNS, rollback, hapus hosting lama | Deployment | M | 5 | Not Started | TC-MIG-01 (data dan upload utuh), TC-MIG-02 (rollback), TC-MIG-03 (halaman publik setara) |
 
 ## 2. Requirement Non-Fungsional
@@ -45,7 +45,7 @@ Rujukan: `docs/SRS.md`. Status: Not Started → In Progress → Done (atau Defer
 | NFR-007 | BG-03 | Kapasitas session Baileys diukur dan dicatat | M | 0 | Not Started | TC-CAP-01 |
 | NFR-008 | BG-07 | Worker dan konektor terpisah dari PHP-FPM, batas memori, auto-restart | M | 0, 4 | Not Started | TC-ISOP-01 |
 | NFR-009 | BG-03, BG-05 | Observabilitas (request ID, latensi, error rate, biaya) | S | 4 | Not Started | TC-OBS-01 |
-| NFR-010 | BG-07 | Migration SaaS tidak mengubah tabel website | M | 1 | Not Started | TC-MIGR-01 |
+| NFR-010 | BG-07 | Migration SaaS tidak mengubah tabel website | M | 1 | In Progress (TC-MIGR-01 lulus untuk Tahap 1) | TC-MIGR-01 |
 | NFR-011 | BG-05 | Batas token, rate limit, alarm biaya | M | 2–3 | Not Started | TC-COST-01 |
 | NFR-012 | BG-06 | Dashboard responsif dan dapat dinavigasi keyboard | C | 4 | Not Started | TC-A11Y-01 |
 

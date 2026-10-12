@@ -5,9 +5,6 @@ use App\Models\Tenant;
 use App\Models\TenantMember;
 use App\Models\User;
 use Illuminate\Database\QueryException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 it('creates a tenant with default status and timezone', function () {
     $tenant = Tenant::create(['name' => 'Toko Maju', 'slug' => 'toko-maju'])->fresh();
