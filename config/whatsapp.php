@@ -41,6 +41,9 @@ return [
         'batch' => 200,
     ],
 
+    // Pesan gagal yang lebih tua dari ini tidak bisa dikirim ulang dari dashboard (membalas pertanyaan kemarin tidak berguna).
+    'retry_window_hours' => (int) env('WHATSAPP_RETRY_WINDOW_HOURS', 24),
+
     // Percobaan kirim sebelum dinyatakan gagal.
     'send_max_attempts' => (int) env('WHATSAPP_SEND_MAX_ATTEMPTS', 4),
 ];

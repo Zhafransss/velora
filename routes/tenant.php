@@ -11,6 +11,7 @@ use App\Livewire\Tenant\Catalog\FaqsManager;
 use App\Livewire\Tenant\Catalog\ProductsManager;
 use App\Livewire\Tenant\Catalog\ServicesManager;
 use App\Livewire\Tenant\ConversationHistory;
+use App\Livewire\Tenant\FailedMessages;
 use App\Livewire\Tenant\NotificationsInbox;
 use App\Livewire\Tenant\Dashboard;
 use App\Livewire\Tenant\WhatsAppConnection;
@@ -58,6 +59,7 @@ Route::middleware(['auth', 'verified', 'tenant'])->prefix('app')->name('app.')->
         // Koneksi WhatsApp dan riwayat percakapan (FR-009.2, FR-013)
         Route::get('/whatsapp', WhatsAppConnection::class)->name('whatsapp');
         Route::get('/conversations', ConversationHistory::class)->name('conversations');
+        Route::get('/failed-messages', FailedMessages::class)->name('failed-messages');
 
         // Tes chatbot (FR-008)
         Route::get('/chat-test', ChatTester::class)->name('chat-test');

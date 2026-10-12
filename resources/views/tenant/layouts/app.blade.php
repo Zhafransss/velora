@@ -21,6 +21,8 @@
             <a class="l" href="{{ route('app.chat-test') }}">Tes Chatbot</a>
             <a class="l" href="{{ route('app.whatsapp') }}">WhatsApp</a>
             <a class="l" href="{{ route('app.conversations') }}">Percakapan</a>
+            @php $failedCount = \App\Livewire\Tenant\FailedMessages::recentFailedQuery()->count(); @endphp
+            <a class="l" href="{{ route('app.failed-messages') }}">Pesan Gagal @if ($failedCount > 0)<span class="count">{{ $failedCount > 99 ? '99+' : $failedCount }}</span>@endif</a>
             <a class="l" href="{{ route('app.subscription') }}">Langganan</a>
             @php $unreadNotifications = \App\Models\TenantNotification::whereNull('read_at')->count(); @endphp
             <a class="l" href="{{ route('app.notifications') }}">Notifikasi @if ($unreadNotifications > 0)<span class="count">{{ $unreadNotifications > 99 ? '99+' : $unreadNotifications }}</span>@endif</a>

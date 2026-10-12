@@ -83,7 +83,7 @@ class ProcessInboundMessage implements ShouldQueue
             return null;
         }
 
-        $key = "msg:{$channel->public_id}:{$message->external_message_id}";
+        $key = $message->quotaKey($channel->public_id);
         $decision = $quota->reserve($tenant, $key, 'chat', $message->id);
 
         if ($decision->exceeded()) {
@@ -191,7 +191,7 @@ class ProcessInboundMessage implements ShouldQueue
             $message = Message::with('conversation.channel')->find($this->messageId);
 
             if ($message && $message->direction === Message::IN && $message->status === Message::PROCESSING) {
-                app(QuotaManager::class)->release($tenant, "msg:{$message->conversation->channel->public_id}:{$message->external_message_id}", $message->id);
+                app(QuotaManager::class)->release($tenant, $message->quotaKey($message->conversation->channel->public_id), $message->id);
                 $message->update(['status' => Message::FAILED, 'error_type' => 'exception']);
             }
         });

@@ -214,7 +214,7 @@ describe('triggers', function () {
         ntInbound($ch);
 
         $row = ntNotes($t)->sole();
-        expect($row->type)->toBe('send_failed')->and($row->body)->toContain('WhatsApp sedang tidak terhubung')->and($row->action_route)->toBe('app.whatsapp');
+        expect($row->type)->toBe('send_failed')->and($row->body)->toContain('WhatsApp sedang tidak terhubung')->and($row->action_route)->toBe('app.failed-messages');
     });
 
     it('never puts customer message content into a notification', function () {

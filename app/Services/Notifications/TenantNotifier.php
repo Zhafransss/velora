@@ -72,7 +72,7 @@ class TenantNotifier
         $this->safely(fn () => $this->notify(
             $tenant, 'send_failed', TenantNotification::WARNING, 'Balasan gagal terkirim ke pelanggan',
             "Alasan terakhir: {$why}. Periksa koneksi di menu WhatsApp.",
-            'app.whatsapp', 'send_failed:' . $this->hour($tenant),
+            'app.failed-messages', 'send_failed:' . $this->hour($tenant),
         ));
     }
 

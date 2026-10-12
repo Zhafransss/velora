@@ -121,7 +121,7 @@ class SweepStuckMessages extends Command
         $channel = $conversation ? Channel::withoutTenancy()->find($conversation->channel_id) : null;
 
         if ($tenant && $channel) {
-            $quota->release($tenant, "msg:{$channel->public_id}:{$m->external_message_id}", $m->id);
+            $quota->release($tenant, $m->quotaKey($channel->public_id), $m->id);
         }
     }
 }
