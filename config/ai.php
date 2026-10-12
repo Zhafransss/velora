@@ -21,6 +21,10 @@ return [
     'history_messages' => (int) env('AI_HISTORY_MESSAGES', 10),
     'customer_message_max_chars' => (int) env('AI_CUSTOMER_MESSAGE_MAX_CHARS', 1000),
 
+    // Kontrol biaya sementara untuk tes chatbot di dashboard (FR-008) sampai kuota harian Tahap 3:
+    // maksimal tes per workspace per jam. Percobaan yang gagal tetap dihitung.
+    'test_limit_per_hour' => (int) env('AI_TEST_LIMIT_PER_HOUR', 20),
+
     // Percobaan ulang per provider untuk galat sementara (timeout, 429, 5xx, respons tidak valid).
     'retries' => (int) env('AI_RETRIES', 1),
     'retry_delay_ms' => (int) env('AI_RETRY_DELAY_MS', 400),

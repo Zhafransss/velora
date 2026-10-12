@@ -18,6 +18,7 @@
             <a class="l" href="{{ route('app.services') }}">Layanan</a>
             <a class="l" href="{{ route('app.faqs') }}">FAQ</a>
             <a class="l" href="{{ route('app.bot') }}">Bot</a>
+            <a class="l" href="{{ route('app.chat-test') }}">Tes Chatbot</a>
             <a class="l" href="{{ route('app.subscription') }}">Langganan</a>
             <span class="sp"></span>
             <span class="muted">{{ auth()->user()->name }}</span>
