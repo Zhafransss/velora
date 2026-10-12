@@ -4,7 +4,12 @@ use App\Http\Controllers\Tenant\Auth\EmailVerificationController;
 use App\Http\Controllers\Tenant\Auth\LoginController;
 use App\Http\Controllers\Tenant\Auth\PasswordResetController;
 use App\Http\Controllers\Tenant\Auth\RegisterController;
+use App\Livewire\Tenant\BotSettingsForm;
 use App\Livewire\Tenant\BusinessProfileForm;
+use App\Livewire\Tenant\ChatTester;
+use App\Livewire\Tenant\Catalog\FaqsManager;
+use App\Livewire\Tenant\Catalog\ProductsManager;
+use App\Livewire\Tenant\Catalog\ServicesManager;
 use App\Livewire\Tenant\Dashboard;
 use Illuminate\Support\Facades\Route;
 
@@ -41,5 +46,16 @@ Route::middleware(['auth', 'verified', 'tenant'])->prefix('app')->name('app.')->
     // Fitur di bawah ini terkunci sampai workspace punya langganan aktif.
     Route::middleware('subscribed')->group(function () {
         Route::get('/business-profile', BusinessProfileForm::class)->name('business-profile');
+
+        // Konfigurasi AI (FR-006)
+        Route::get('/bot', BotSettingsForm::class)->name('bot');
+
+        // Tes chatbot (FR-008)
+        Route::get('/chat-test', ChatTester::class)->name('chat-test');
+
+        // Knowledge base (FR-005)
+        Route::get('/products', ProductsManager::class)->name('products');
+        Route::get('/services', ServicesManager::class)->name('services');
+        Route::get('/faqs', FaqsManager::class)->name('faqs');
     });
 });

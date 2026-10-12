@@ -267,6 +267,7 @@ Branching: `main` → `staging` → `feature/*`. VPS dipakai sebagai staging sel
 | R-06 | Kebijakan WhatsApp/Meta terkait penyedia AI | Larangan komersial | Dipantau; adapter terpisah; peninjauan sebelum peluncuran komersial |
 | R-07 | Migrasi website produksi | Downtime/kehilangan data | Cutover terakhir, rollback via DNS, hosting lama dipertahankan |
 | R-08 | Chat pelanggan berisi data pribadi | Risiko hukum dan kepercayaan | NFR-006 |
+| R-09 | Tier gratis/rendah penyedia AI: uji 2026-10-12 menunjukkan Groq `on_demand` dibatasi 8.000 token/menit (~6 percakapan/menit dgn prompt ~1.250 token) dan kuota `gemini-3.5-flash` akun habis | Pesan pelanggan gagal dijawab saat ramai, walau hanya 5 tenant | Upgrade ke tier berbayar (Groq Dev Tier / Gemini berbayar) SEBELUM pilot; antrean + backoff di Tahap 3; pantau 429 di `ai_calls` |
 
 ---
 
@@ -306,5 +307,5 @@ Dicatat di RTM bagian Hutang Teknis. Yang **harus** selesai sebelum ada pengguna
 | OQ-06 | Notifikasi ke pemilik saat bot gagal menjawab (usulan minimal pengganti human handover) | Tahap 3 |
 | OQ-07 | Penyimpanan auth Baileys produksi: direktori persisten vs MySQL terenkripsi | Akhir Tahap 0 |
 | OQ-08 | Deadline dan alur deploy (manual atau CI) | Perencanaan Tahap 1 |
-| OQ-09 | Strategi retrieval knowledge base (konteks penuh vs pencarian) | Tahap 2 |
+| OQ-09 | Strategi retrieval knowledge base (konteks penuh vs pencarian) | Tahap 2 — **sementara: konteks penuh ber-batas (AI_CONTEXT_MAX_CHARS); finalisasi setelah uji akurasi 2.6** |
 | OQ-10 | Ketentuan pemrosesan data pada akun Gemini/Groq berbayar yang dipakai | Sebelum pilot |

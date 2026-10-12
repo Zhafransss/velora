@@ -3,6 +3,7 @@
 namespace App\Support\Tenancy;
 
 use App\Models\Tenant;
+use App\Models\TenantMember;
 use App\Models\User;
 
 /**
@@ -45,6 +46,19 @@ class CurrentTenant
             ->where('tenants.status', Tenant::STATUS_ACTIVE)
             ->orderBy('tenant_members.id')
             ->first();
+    }
+
+    /** Hanya owner/admin workspace aktif yang boleh mengubah data; viewer hanya membaca. */
+    public function userCanWrite(?User $user): bool
+    {
+        if ($user === null || $this->tenant === null) {
+            return false;
+        }
+
+        return TenantMember::where('tenant_id', $this->tenant->id)
+            ->where('user_id', $user->id)
+            ->whereIn('role', [TenantMember::ROLE_OWNER, TenantMember::ROLE_ADMIN])
+            ->exists();
     }
 
     /** Jalankan blok kode sebagai tenant tertentu (job, command, seeder), lalu kembalikan konteks semula. */
