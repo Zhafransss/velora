@@ -10,7 +10,9 @@ use App\Livewire\Tenant\ChatTester;
 use App\Livewire\Tenant\Catalog\FaqsManager;
 use App\Livewire\Tenant\Catalog\ProductsManager;
 use App\Livewire\Tenant\Catalog\ServicesManager;
+use App\Livewire\Tenant\ConversationHistory;
 use App\Livewire\Tenant\Dashboard;
+use App\Livewire\Tenant\WhatsAppConnection;
 use Illuminate\Support\Facades\Route;
 
 // Dashboard tenant (DEC-05, DEC-10). Admin platform tetap di /admin (Filament).
@@ -49,6 +51,10 @@ Route::middleware(['auth', 'verified', 'tenant'])->prefix('app')->name('app.')->
 
         // Konfigurasi AI (FR-006)
         Route::get('/bot', BotSettingsForm::class)->name('bot');
+
+        // Koneksi WhatsApp dan riwayat percakapan (FR-009.2, FR-013)
+        Route::get('/whatsapp', WhatsAppConnection::class)->name('whatsapp');
+        Route::get('/conversations', ConversationHistory::class)->name('conversations');
 
         // Tes chatbot (FR-008)
         Route::get('/chat-test', ChatTester::class)->name('chat-test');
