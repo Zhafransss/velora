@@ -36,6 +36,8 @@ return [
     ],
 
     'recaptcha' => [
+        // false hanya untuk pengembangan lokal/tes tanpa kunci Google. Produksi: biarkan true.
+        'enabled' => (bool) env('RECAPTCHA_ENABLED', true),
         'site_key' => env('RECAPTCHA_SITE_KEY'),
         'secret_key' => env('RECAPTCHA_SECRET_KEY'),
     ],

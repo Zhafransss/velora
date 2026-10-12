@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Models\TenantMember;
 use App\Models\User;
+use App\Services\Security\RecaptchaVerifier;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,26 +15,35 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 
 class RegisterController extends Controller
 {
-    public function create()
+    public function create(RecaptchaVerifier $recaptcha)
     {
-        return view('tenant.auth.register');
+        return view('tenant.auth.register', ['recaptchaSiteKey' => $recaptcha->siteKey()]);
     }
 
     /**
      * Pendaftaran terbuka. Akun baru otomatis punya workspace (owner) TANPA langganan,
      * sehingga fitur terkunci sampai langganan aktif (lihat EnsureSubscribed).
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, RecaptchaVerifier $recaptcha): RedirectResponse
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'workspace_name' => ['required', 'string', 'max:150'],
             'email' => ['required', 'string', 'email:rfc', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::defaults()],
+            'g-recaptcha-response' => [$recaptcha->enabled() ? 'required' : 'nullable', 'string'],
+        ], [
+            'g-recaptcha-response.required' => 'Silakan centang "Saya bukan robot" terlebih dahulu.',
         ]);
+
+        // Setelah validasi lain, agar token tidak dihabiskan untuk formulir yang sudah pasti ditolak.
+        if (! $recaptcha->verify($data['g-recaptcha-response'] ?? null, $request->ip())) {
+            throw ValidationException::withMessages(['g-recaptcha-response' => 'Verifikasi reCAPTCHA gagal. Silakan coba lagi.']);
+        }
 
         $user = DB::transaction(function () use ($data) {
             $user = User::create([

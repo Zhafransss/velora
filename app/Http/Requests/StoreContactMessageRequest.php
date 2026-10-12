@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Http;
+use App\Services\Security\RecaptchaVerifier;
 use Illuminate\Validation\ValidationException;
 
 class StoreContactMessageRequest extends FormRequest
@@ -21,7 +21,7 @@ class StoreContactMessageRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:255'],
             'type' => ['required', 'string', 'in:Company Profile,Landing Page,E-Commerce,Sistem / Dashboard,Lainnya'],
             'message' => ['required', 'string'],
-            'g-recaptcha-response' => ['required', 'string'],
+            'g-recaptcha-response' => [config('services.recaptcha.enabled') ? 'required' : 'nullable', 'string'],
         ];
     }
 
@@ -41,15 +41,7 @@ class StoreContactMessageRequest extends FormRequest
 
     protected function passedValidation(): void
     {
-        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => config('services.recaptcha.secret_key'),
-            'response' => $this->input('g-recaptcha-response'),
-            'remoteip' => $this->ip(),
-        ]);
-
-        $result = $response->json();
-
-        if (! data_get($result, 'success')) {
+        if (! app(RecaptchaVerifier::class)->verify($this->input('g-recaptcha-response'), $this->ip())) {
             throw ValidationException::withMessages([
                 'g-recaptcha-response' => 'Verifikasi reCAPTCHA gagal. Silakan coba lagi.',
             ]);

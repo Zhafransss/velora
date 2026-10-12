@@ -30,6 +30,23 @@ return [
 
     'disks' => [
 
+        // Tujuan backup (NFR-005). Produksi: isi BACKUP_S3_* (Cloudflare R2 / Backblaze B2 / AWS S3 / MinIO).
+        // Tanpa BACKUP_S3_BUCKET, backup hanya ditulis ke folder lokal (BUKAN di luar server; hanya untuk pengembangan).
+        'backup' => env('BACKUP_S3_BUCKET') ? [
+            'driver' => 's3',
+            'key' => env('BACKUP_S3_KEY'),
+            'secret' => env('BACKUP_S3_SECRET'),
+            'region' => env('BACKUP_S3_REGION', 'auto'),
+            'bucket' => env('BACKUP_S3_BUCKET'),
+            'endpoint' => env('BACKUP_S3_ENDPOINT'),
+            'use_path_style_endpoint' => (bool) env('BACKUP_S3_PATH_STYLE', true),
+            'throw' => true,
+        ] : [
+            'driver' => 'local',
+            'root' => storage_path('app/backups-local'),
+            'throw' => true,
+        ],
+
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),

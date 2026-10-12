@@ -25,8 +25,16 @@
         <label for="password_confirmation">Ulangi password</label>
         <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password">
 
+        @if ($recaptchaSiteKey)
+            <div class="g-recaptcha" data-sitekey="{{ $recaptchaSiteKey }}" style="margin-top:12px"></div>
+        @endif
+        @error('g-recaptcha-response')<div class="err">{{ $message }}</div>@enderror
+
         <button class="btn block" type="submit">Daftar</button>
     </form>
+    @if ($recaptchaSiteKey)
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    @endif
 
     <p class="muted" style="margin-top:16px">Sudah punya akun? <a href="{{ route('login') }}">Masuk</a></p>
 @endsection
