@@ -1,5 +1,5 @@
 node_modules/
 .env
 # Auth state per session (creds + Signal keys). Never commit.
-auth/
+/auth/
 *.log
