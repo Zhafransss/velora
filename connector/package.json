@@ -10,10 +10,13 @@
   "scripts": {
     "start": "node src/index.js",
     "pair": "node scripts/pair.js",
-    "smoke": "node scripts/smoke.js"
+    "smoke": "node scripts/smoke.js",
+    "test": "node --test test/",
+    "keygen": "node -e \"import('./src/auth/secret-box.js').then(m=>console.log(m.generateKeySpec('k1')))\""
   },
   "dependencies": {
     "@whiskeysockets/baileys": "7.0.0-rc14",
+    "mysql2": "^3.24.5",
     "pino": "^9.5.0",
     "qrcode-terminal": "^0.12.0"
   }

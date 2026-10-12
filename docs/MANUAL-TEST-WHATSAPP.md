@@ -102,6 +102,14 @@ Jalankan worker dengan `php artisan queue:work --tries=1 --sleep=1` agar job dia
 Catat hasil tiap skenario (lulus/gagal + log singkat **tanpa token/secret/QR**) lalu kirim ke sesi Claude untuk memperbarui RTM
 (FR-009.x, WA-MT-01..07). Untuk membersihkan: menu WhatsApp › **Putuskan**, lalu hapus folder `connector/auth/`.
 
+## Auth terenkripsi di MySQL (DEC-17) — uji manual
+Setelah `AUTH_STORE=mysql` aktif, sesi lama di `connector/auth/` tidak ikut: **hubungkan ulang (scan QR) tiap nomor**.
+1. Hubungkan kanal, scan QR → status `connected`.
+2. Cek `SELECT channel_id, enc_key_id, LEFT(payload,12) FROM wa_auth_creds;` → payload berawalan `v1.k1.`, tidak terbaca.
+3. Restart konektor → kanal pulih tanpa scan ulang.
+4. Salah satu kunci di `AUTH_ENCRYPTION_KEYS` diganti → konektor menolak memulihkan kanal (tidak menimpa data); kembalikan kunci.
+5. Putuskan/hapus kanal → baris `wa_auth_*` kanal itu hilang.
+
 ## Hasil uji manual tercatat
 | Tanggal | Skenario | Hasil | Bukti |
 |---|---|---|---|

@@ -20,7 +20,7 @@ Rujukan: `docs/SRS.md`. Status: Not Started → In Progress → Done (atau Defer
 | FR-009.3 | BG-03, BG-04 | Pesan masuk dipetakan ke channel/tenant terverifikasi, dideduplikasi | Channels/WhatsApp | M | 0, 3 | In Progress (webhook HMAC + anti replay, dedup per channel+id, tenant dari channel: tes lulus dgn konektor palsu; belum dgn Baileys asli) | WA-MT-02, WA-MT-05 |
 | FR-009.4 | BG-04 | Balasan keluar hanya lewat channel milik percakapan | Channels/WhatsApp | M | 0, 3 | In Progress (balasan selalu via channel milik percakapan, diuji 2 channel; belum dgn Baileys asli) | WA-MT-03 |
 | FR-009.5 | BG-03 | Reconnect dengan backoff; status koneksi dibedakan | Channels/WhatsApp | M | 0 | In Progress | WA-MT-04 |
-| FR-009.6 | BG-04 | Pencabutan channel menutup koneksi dan menghapus kredensial | Channels/WhatsApp | M | 3 | Not Started | WA-MT-07 |
+| FR-009.6 | BG-04 | Pencabutan channel menutup koneksi dan menghapus kredensial | Channels/WhatsApp | M | 3 | In Progress | WA-MT-07 |
 | FR-009.7 | BG-03 | Mitigasi blokir: hanya balas pesan masuk, jeda acak, batas laju | Channels/WhatsApp | M | 3 | In Progress (hanya membalas pesan masuk, batas laju per kanal 20/mnt, ditunda bukan dibuang: tes lulus; jeda acak ada di konektor) | TC-WA-RATE-01 |
 | FR-009.8 | BG-03 | Interface `WhatsAppChannelAdapter` dapat diganti | Channels/WhatsApp | S | 3 | In Progress (interface + adapter Baileys + tes; belum ada adapter kedua) | WA-MT-08 |
 | FR-010 | BG-01 | Website widget | Channels/WebsiteWidget | D | – | Deferred | – |
@@ -74,3 +74,4 @@ Lihat `docs/SRS.md` bagian 9 (OQ-01 s/d OQ-10).
 |---------|-----------|
 | 2026-10-11 | RTM dibuat dari PRD V1.0 dan keputusan diskusi. Seluruh item Not Started; FR-010 Deferred. |
 | 2026-10-11 | Tahap 0 dimulai (branch `feature/poc-baileys`): kerangka konektor `connector/` selesai. FR-009.1–.5 menjadi In Progress. Terverifikasi lokal: 3 socket paralel menghasilkan 3 QR berbeda, token dan validasi `channelId` bekerja. **Belum terverifikasi dengan nomor sungguhan di VPS**, sehingga belum ada yang Done. |
+| 2026-10-12 | DEC-17 (branch `feature/encrypted-auth-store`): auth Baileys di MySQL terenkripsi AES-256-GCM (`connector/src/auth/`, tabel `wa_auth_creds`/`wa_auth_keys`), hapus kredensial saat kanal dihapus + `whatsapp:prune-auth` mingguan. 39 tes Node (unit + MySQL nyata), 12 tes Laravel; konektor boot di mode mysql. **Belum terverifikasi dengan ponsel** (pairing ulang + restart tanpa scan) → FR-009.1/.6 tetap In Progress. NFR-005: kunci enkripsi wajib dibackup terpisah. |

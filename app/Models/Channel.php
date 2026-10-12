@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class Channel extends Model
@@ -39,6 +40,14 @@ class Channel extends Model
             if ((int) Bot::withoutTenancy()->whereKey($channel->bot_id)->value('tenant_id') !== (int) $channel->tenant_id) {
                 throw new \InvalidArgumentException('Channel bot must belong to the same tenant.');
             }
+        });
+
+        // Tidak ada foreign key ke tabel auth (konektor juga dipakai mandiri oleh skrip PoC), jadi kredensial WhatsApp
+        // milik kanal HARUS dihapus bersama kanalnya (DEC-17, FR-009.6). Penghapusan lewat cascade DB (mis. tenant
+        // dihapus) tidak memicu event ini — itu ditangani whatsapp:prune-auth.
+        static::deleting(function (Channel $channel) {
+            DB::table('wa_auth_keys')->where('channel_id', $channel->public_id)->delete();
+            DB::table('wa_auth_creds')->where('channel_id', $channel->public_id)->delete();
         });
     }
 

@@ -27,7 +27,32 @@ export function loadConfig() {
     throw new Error('SEND_DELAY_MAX_MS must be >= SEND_DELAY_MIN_MS.');
   }
 
+  const authStore = process.env.AUTH_STORE ?? 'file';
+  if (authStore !== 'file' && authStore !== 'mysql') {
+    throw new Error('AUTH_STORE must be "file" or "mysql".');
+  }
+
+  const db = {
+    host: process.env.DB_HOST ?? '127.0.0.1',
+    port: int('DB_PORT', 3306),
+    database: process.env.DB_DATABASE ?? '',
+    user: process.env.DB_USERNAME ?? '',
+    password: process.env.DB_PASSWORD ?? '',
+  };
+
+  if (authStore === 'mysql') {
+    if (!db.database || !db.user) {
+      throw new Error('DB_DATABASE and DB_USERNAME are required when AUTH_STORE=mysql.');
+    }
+    if (!process.env.AUTH_ENCRYPTION_KEYS) {
+      throw new Error('AUTH_ENCRYPTION_KEYS is required when AUTH_STORE=mysql (see .env.example).');
+    }
+  }
+
   return {
+    authStore,
+    authEncryptionKeys: process.env.AUTH_ENCRYPTION_KEYS ?? '',
+    db,
     host: process.env.CONNECTOR_HOST ?? '127.0.0.1',
     port: int('CONNECTOR_PORT', 3100),
     token,
