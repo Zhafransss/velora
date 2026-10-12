@@ -35,7 +35,7 @@ return [
     'providers' => [
         'gemini' => [
             'api_key' => env('GEMINI_API_KEY'),
-            'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
+            'model' => env('GEMINI_MODEL', 'gemini-3.5-flash'),
             'base_url' => env('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com'),
             'timeout' => (int) env('GEMINI_TIMEOUT', 20),
             // Harga USD per 1 juta token (opsional; kosong = biaya tidak dihitung).
@@ -44,7 +44,7 @@ return [
         ],
         'groq' => [
             'api_key' => env('GROQ_API_KEY'),
-            'model' => env('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+            'model' => env('GROQ_MODEL', 'openai/gpt-oss-120b'),
             'base_url' => env('GROQ_BASE_URL', 'https://api.groq.com/openai'),
             'timeout' => (int) env('GROQ_TIMEOUT', 20),
             'price_input_per_mtok' => env('GROQ_PRICE_INPUT'),
