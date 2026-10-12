@@ -9,7 +9,7 @@ Rujukan: `docs/SRS.md`. Status: Not Started → In Progress → Done (atau Defer
 |----|---------------|-------------|-------------|-----------|-------|--------|-----------|
 | FR-001 | BG-01, BG-06 | Registrasi, login, logout, reset password, verifikasi email | Tenancy/Auth | M | 1 | Not Started | TC-AUTH-01..05 |
 | FR-002 | BG-01, BG-06 | Workspace dan profil bisnis (zona waktu, jam operasional) | Tenancy | M | 1 | In Progress (skema + model selesai; UI onboarding belum) | TC-WS-01..03 |
-| FR-003 | BG-04 | Isolasi tenant (`tenant_id`, global scope, policy); `/admin` hanya admin platform | Tenancy | M | 1 | Not Started | TC-ISO-01 (user A tak bisa baca/ubah data B), TC-ISO-02 (user tenant ditolak di `/admin`) |
+| FR-003 | BG-04 | Isolasi tenant (`tenant_id`, global scope, policy); `/admin` hanya admin platform | Tenancy | M | 1 | In Progress (trait + scope + konteks + test lulus; policy dan model data nyata belum ada) | TC-ISO-01 (user A tak bisa baca/ubah data B), TC-ISO-02 (user tenant ditolak di `/admin`) |
 | FR-004 | BG-01, BG-05 | Plan, entitlement terpusat, status subscription, penagihan manual | Billing | M | 4 | Not Started | TC-ENT-01 (Small tak bisa fitur Medium), TC-SUB-01 (expired/suspended tak diproses) |
 | FR-005 | BG-02 | CRUD produk, layanan, FAQ (stok NULL = tidak diketahui) | KnowledgeBase | M | 2 | Not Started | TC-KB-01..04 |
 | FR-006 | BG-02 | Konfigurasi AI: persona, bahasa, pesan pembuka, fallback | AI | M | 2 | Not Started | TC-AIC-01..02 |

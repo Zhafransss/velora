@@ -14,7 +14,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Scoped: instance baru per request/job agar konteks tenant tidak bocor antar eksekusi.
+        $this->app->scoped(\App\Support\Tenancy\CurrentTenant::class);
     }
 
     /**
