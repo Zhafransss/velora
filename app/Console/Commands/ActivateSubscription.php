@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Subscription;
 use App\Models\Tenant;
 use Illuminate\Console\Command;
 
@@ -37,16 +36,15 @@ class ActivateSubscription extends Command
             return self::FAILURE;
         }
 
-        $days = max(1, (int) $this->option('days'));
+        try {
+            $subscription = app(\App\Services\Admin\SubscriptionService::class)->activate(
+                $tenant, $plan, max(1, (int) $this->option('days')), $this->option('notes') ?: null,
+            );
+        } catch (\InvalidArgumentException $e) {
+            $this->error($e->getMessage());
 
-        $subscription = Subscription::create([
-            'tenant_id' => $tenant->id,
-            'plan_code' => $plan,
-            'status' => Subscription::STATUS_ACTIVE,
-            'current_period_start' => now(),
-            'current_period_end' => now()->addDays($days),
-            'notes' => $this->option('notes') ?: null,
-        ]);
+            return self::FAILURE;
+        }
 
         $this->info("Langganan {$plan} aktif untuk '{$tenant->name}' sampai {$subscription->current_period_end->format('d M Y')}.");
 
