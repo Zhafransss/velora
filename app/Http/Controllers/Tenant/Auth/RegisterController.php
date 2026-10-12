@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
@@ -55,12 +56,20 @@ class RegisterController extends Controller
             return $user;
         });
 
-        event(new Registered($user));
+        // Akun sudah dibuat; kegagalan SMTP tidak boleh membuat pendaftaran error. Pengguna diberi tahu dan dapat kirim ulang.
+        $mailFailed = false;
+
+        try {
+            event(new Registered($user));
+        } catch (\Throwable $e) {
+            $mailFailed = true;
+            Log::error('mail.verification.failed', ['error' => $e::class, 'message' => mb_substr($e->getMessage(), 0, 200)]);
+        }
 
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('verification.notice');
+        return redirect()->route('verification.notice')->with('mail_error', $mailFailed);
     }
 
     private function uniqueSlug(string $name): string

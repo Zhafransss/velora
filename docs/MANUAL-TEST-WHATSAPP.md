@@ -18,6 +18,17 @@ dijawab bot berdasarkan knowledge base. Ini juga menjalankan uji PoC konektor (W
 | `CONNECTOR_URL=http://127.0.0.1:3100` | `CONNECTOR_PORT=3100` |
 | (URL situs, mis. `127.0.0.1:8000`) | `WEBHOOK_URL=http://127.0.0.1:8000/webhooks/whatsapp` |
 
+## Email (verifikasi akun & reset password)
+Dikirim lewat Hostinger SMTP dari `team@veloradigitalworks.com`. Di `.env` sudah terisi `MAIL_MAILER=smtp`, `MAIL_HOST=smtp.hostinger.com`,
+`MAIL_PORT=465`, `MAIL_SCHEME=smtps`, `MAIL_USERNAME` dan `MAIL_FROM_*`. **Yang perlu Anda isi sendiri: `MAIL_PASSWORD`** =
+password mailbox `team@veloradigitalworks.com` (dibuat di hPanel Hostinger › Email). Jangan kirim password ini ke chat atau commit.
+```bash
+php artisan config:clear
+php artisan mail:test alamat-anda@gmail.com   # memverifikasi kredensial & mengirim email uji
+```
+Jika email tidak masuk: cek folder Spam; `mail:test` menampilkan penyebab (mis. `535 authentication failed` = password salah/belum diisi).
+Registrasi tetap berhasil walau SMTP gagal; halaman verifikasi memberi tahu dan menyediakan tombol "Kirim ulang".
+
 ## Menjalankan (3 terminal terpisah, semuanya harus hidup)
 ```bash
 # 1. Web (sudah berjalan di port 8000 jika Anda masih membukanya)
@@ -33,8 +44,9 @@ node --env-file=.env src/index.js
 Pastikan MySQL XAMPP hidup. Setelah mengubah kode PHP, restart terminal 2 (`queue:work` memuat kode saat mulai).
 
 ## Langkah
-1. **Daftar** di `http://127.0.0.1:8000/register`. Email verifikasi masuk ke `storage/logs/laravel.log` (MAIL_MAILER=log);
-   cara cepat: `php artisan user:verify email-anda@contoh.com`.
+1. **Daftar** di `http://127.0.0.1:8000/register`. Email verifikasi dikirim sungguhan dari `team@veloradigitalworks.com`
+   (lihat bagian "Email" di bawah). Buka tautannya **di komputer yang sama** (tautan menunjuk `127.0.0.1:8000`, tidak bisa dibuka dari ponsel).
+   Cara cepat tanpa email: `php artisan user:verify email-anda@contoh.com`.
 2. **Aktifkan langganan** (penagihan manual): `php artisan subscription:activate <slug-workspace> small --days=30`.
    Slug = nama workspace huruf kecil dengan tanda hubung (mis. "Toko Maju" → `toko-maju`; ID angka juga diterima).
 3. **Login** di `/login` → dashboard `/app`.

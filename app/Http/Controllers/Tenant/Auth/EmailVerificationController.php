@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class EmailVerificationController extends Controller
 {
@@ -26,7 +27,13 @@ class EmailVerificationController extends Controller
     public function send(Request $request): RedirectResponse
     {
         if (! $request->user()->hasVerifiedEmail()) {
-            $request->user()->sendEmailVerificationNotification();
+            try {
+                $request->user()->sendEmailVerificationNotification();
+            } catch (\Throwable $e) {
+                Log::error('mail.verification.failed', ['error' => $e::class, 'message' => mb_substr($e->getMessage(), 0, 200)]);
+
+                return back()->with('mail_error', true);
+            }
         }
 
         return back()->with('status', 'Tautan verifikasi baru telah dikirim.');
