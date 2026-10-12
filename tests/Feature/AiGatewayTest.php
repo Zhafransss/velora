@@ -82,11 +82,29 @@ it('fails with a summary of every attempt when all providers fail', function () 
         gw([$a, $b])->generate(req());
         $this->fail('Expected exception');
     } catch (AiGatewayException $e) {
-        expect($e->attempts)->toHaveCount(4)
-            ->and(array_column($e->attempts, 'provider'))->toBe(['gemini', 'gemini', 'groq', 'groq'])
+        expect($e->attempts)->toHaveCount(3) // gemini 500 diulang 1x; groq 429 tidak diulang
+            ->and(array_column($e->attempts, 'provider'))->toBe(['gemini', 'gemini', 'groq'])
             ->and($e->lastType())->toBe('rate_limit')
             ->and($e->getMessage())->toContain('gemini:server_error')->not->toContain('rahasia');
     }
+});
+
+it('never returns a truncated answer: falls back to the next provider without retrying', function () {
+    $a = new P('gemini', [PE::truncated('gemini')]);
+    $b = new P('groq', [P::ok('groq', 'jawaban utuh')]);
+
+    $r = gw([$a, $b])->generate(req());
+
+    expect($a->calls)->toBe(1)->and($r->text)->toBe('jawaban utuh')->and($r->fallbackUsed)->toBeTrue();
+});
+
+it('does not retry a rate-limited provider on the same provider', function () {
+    $a = new P('gemini', [PE::fromStatus('gemini', 429)]);
+    $b = new P('groq', [P::ok('groq')]);
+
+    $r = gw([$a, $b])->generate(req());
+
+    expect($a->calls)->toBe(1)->and($r->provider)->toBe('groq');
 });
 
 it('fails clearly when no provider is configured', function () {

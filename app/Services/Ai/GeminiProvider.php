@@ -21,16 +21,22 @@ class GeminiProvider extends HttpAiProvider
 
     protected function payload(AiRequest $request): array
     {
+        $generation = [
+            'maxOutputTokens' => $request->maxOutputTokens,
+            'temperature' => $request->temperature,
+        ];
+
+        if ($this->reasoning) {
+            $generation['thinkingConfig'] = ['thinkingLevel' => $this->reasoning];
+        }
+
         return [
             'systemInstruction' => ['parts' => [['text' => $request->system]]],
             'contents' => array_map(fn (array $m) => [
                 'role' => $m['role'] === 'assistant' ? 'model' : 'user',
                 'parts' => [['text' => $m['content']]],
             ], $request->messages),
-            'generationConfig' => [
-                'maxOutputTokens' => $request->maxOutputTokens,
-                'temperature' => $request->temperature,
-            ],
+            'generationConfig' => $generation,
         ];
     }
 
@@ -49,6 +55,10 @@ class GeminiProvider extends HttpAiProvider
 
         if (($candidate['finishReason'] ?? null) === 'SAFETY') {
             throw AiProviderException::blocked($this->name());
+        }
+
+        if (($candidate['finishReason'] ?? null) === 'MAX_TOKENS') {
+            throw AiProviderException::truncated($this->name());
         }
 
         $text = collect($candidate['content']['parts'] ?? [])->pluck('text')->filter()->implode('');

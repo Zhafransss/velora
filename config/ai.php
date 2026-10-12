@@ -10,7 +10,8 @@ return [
     'order' => array_filter(array_map('trim', explode(',', env('AI_PROVIDER_ORDER', 'gemini,groq')))),
 
     // Batas keras token keluaran per jawaban (menjaga biaya; permintaan tidak bisa melebihi ini).
-    'max_output_tokens' => (int) env('AI_MAX_OUTPUT_TOKENS', 500),
+    // Model berpikir (Gemini 3.x, gpt-oss) memakai anggaran ini juga untuk "berpikir": terlalu kecil = jawaban terpotong.
+    'max_output_tokens' => (int) env('AI_MAX_OUTPUT_TOKENS', 1024),
 
     // Rendah agar jawaban faktual/konsisten (bot tidak boleh mengarang).
     'temperature' => (float) env('AI_TEMPERATURE', 0.3),
@@ -38,6 +39,8 @@ return [
             'model' => env('GEMINI_MODEL', 'gemini-3.5-flash'),
             'base_url' => env('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com'),
             'timeout' => (int) env('GEMINI_TIMEOUT', 20),
+            // minimal | low | medium | high. Kosong = default model. Tidak semua model mendukungnya.
+            'reasoning' => env('GEMINI_THINKING_LEVEL'),
             // Harga USD per 1 juta token (opsional; kosong = biaya tidak dihitung).
             'price_input_per_mtok' => env('GEMINI_PRICE_INPUT'),
             'price_output_per_mtok' => env('GEMINI_PRICE_OUTPUT'),
@@ -47,6 +50,8 @@ return [
             'model' => env('GROQ_MODEL', 'openai/gpt-oss-120b'),
             'base_url' => env('GROQ_BASE_URL', 'https://api.groq.com/openai'),
             'timeout' => (int) env('GROQ_TIMEOUT', 20),
+            // low | medium | high (model gpt-oss). Kosong = default model.
+            'reasoning' => env('GROQ_REASONING_EFFORT'),
             'price_input_per_mtok' => env('GROQ_PRICE_INPUT'),
             'price_output_per_mtok' => env('GROQ_PRICE_OUTPUT'),
         ],

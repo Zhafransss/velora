@@ -13,6 +13,8 @@ abstract class HttpAiProvider implements AiProvider
         protected string $model,
         protected string $baseUrl,
         protected int $timeout,
+        /** Tingkat penalaran model (mis. low/minimal). Null = default provider. Model berpikir memakai anggaran token keluaran. */
+        protected ?string $reasoning = null,
     ) {
     }
 

@@ -267,6 +267,7 @@ Branching: `main` → `staging` → `feature/*`. VPS dipakai sebagai staging sel
 | R-06 | Kebijakan WhatsApp/Meta terkait penyedia AI | Larangan komersial | Dipantau; adapter terpisah; peninjauan sebelum peluncuran komersial |
 | R-07 | Migrasi website produksi | Downtime/kehilangan data | Cutover terakhir, rollback via DNS, hosting lama dipertahankan |
 | R-08 | Chat pelanggan berisi data pribadi | Risiko hukum dan kepercayaan | NFR-006 |
+| R-09 | Tier gratis/rendah penyedia AI: uji 2026-10-12 menunjukkan Groq `on_demand` dibatasi 8.000 token/menit (~6 percakapan/menit dgn prompt ~1.250 token) dan kuota `gemini-3.5-flash` akun habis | Pesan pelanggan gagal dijawab saat ramai, walau hanya 5 tenant | Upgrade ke tier berbayar (Groq Dev Tier / Gemini berbayar) SEBELUM pilot; antrean + backoff di Tahap 3; pantau 429 di `ai_calls` |
 
 ---
 

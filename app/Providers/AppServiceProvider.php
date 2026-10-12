@@ -33,7 +33,7 @@ class AppServiceProvider extends ServiceProvider
                     continue;
                 }
 
-                $providers[] = new $classes[$name]($p['api_key'], $p['model'], $p['base_url'], $p['timeout']);
+                $providers[] = new $classes[$name]($p['api_key'], $p['model'], $p['base_url'], $p['timeout'], $p['reasoning'] ?: null);
                 $pricing[$name] = [
                     'input' => $p['price_input_per_mtok'] !== null ? (float) $p['price_input_per_mtok'] : null,
                     'output' => $p['price_output_per_mtok'] !== null ? (float) $p['price_output_per_mtok'] : null,

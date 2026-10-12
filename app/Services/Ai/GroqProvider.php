@@ -22,7 +22,7 @@ class GroqProvider extends HttpAiProvider
 
     protected function payload(AiRequest $request): array
     {
-        return [
+        $payload = [
             'model' => $this->model,
             'messages' => array_merge(
                 [['role' => 'system', 'content' => $request->system]],
@@ -31,6 +31,12 @@ class GroqProvider extends HttpAiProvider
             'max_tokens' => $request->maxOutputTokens,
             'temperature' => $request->temperature,
         ];
+
+        if ($this->reasoning) {
+            $payload['reasoning_effort'] = $this->reasoning;
+        }
+
+        return $payload;
     }
 
     protected function parse(array $json): array
@@ -43,6 +49,10 @@ class GroqProvider extends HttpAiProvider
 
         if (($choice['finish_reason'] ?? null) === 'content_filter') {
             throw AiProviderException::blocked($this->name());
+        }
+
+        if (($choice['finish_reason'] ?? null) === 'length') {
+            throw AiProviderException::truncated($this->name());
         }
 
         return [

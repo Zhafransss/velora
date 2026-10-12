@@ -99,7 +99,7 @@ describe('Gemini adapter', function () {
         [400, 'bad_request', false],
         [401, 'auth', false],
         [403, 'auth', false],
-        [429, 'rate_limit', true],
+        [429, 'rate_limit', false], // kuota habis: langsung fallback, jangan diulang
         [500, 'server_error', true],
         [503, 'server_error', true],
     ]);
@@ -124,6 +124,26 @@ describe('Gemini adapter', function () {
         'prompt blocked' => [['promptFeedback' => ['blockReason' => 'SAFETY']]],
         'candidate blocked' => [['candidates' => [['finishReason' => 'SAFETY']]]],
     ]);
+
+    it('treats a MAX_TOKENS finish as a non-retryable truncated answer instead of returning half a sentence', function () {
+        Http::fake(['gemini.test/*' => Http::response([
+            'candidates' => [['content' => ['parts' => [['text' => 'Halo! Saya Sari dari Kopi Senja. Saat ini saya']]], 'finishReason' => 'MAX_TOKENS']],
+        ])]);
+
+        expect(fn () => gemini()->generate(aiRequest()))
+            ->toThrow(fn (AiProviderException $e) => $e->type === 'truncated' && ! $e->retryable);
+    });
+
+    it('sends thinkingConfig only when a reasoning level is configured', function () {
+        Http::fake(['gemini.test/*' => Http::response(geminiOk())]);
+
+        gemini()->generate(aiRequest());
+        (new GeminiProvider('K', 'gemini-test', 'https://gemini.test', 5, 'low'))->generate(aiRequest());
+
+        $sent = Http::recorded()->map(fn ($pair) => $pair[0]->data()['generationConfig']);
+        expect($sent[0])->not->toHaveKey('thinkingConfig')
+            ->and($sent[1]['thinkingConfig'])->toBe(['thinkingLevel' => 'low']);
+    });
 
     it('treats empty or malformed bodies as retryable invalid_response', function (mixed $body) {
         Http::fake(['gemini.test/*' => Http::response($body)]);
@@ -177,9 +197,26 @@ describe('Groq adapter', function () {
     })->with([
         [400, 'bad_request', false],
         [401, 'auth', false],
-        [429, 'rate_limit', true],
+        [429, 'rate_limit', false],
         [502, 'server_error', true],
     ]);
+
+    it('treats finish_reason length as a non-retryable truncated answer', function () {
+        Http::fake(['groq.test/*' => Http::response(['choices' => [['message' => ['content' => 'Setengah kali'], 'finish_reason' => 'length']]])]);
+
+        expect(fn () => groq()->generate(aiRequest()))
+            ->toThrow(fn (AiProviderException $e) => $e->type === 'truncated' && ! $e->retryable);
+    });
+
+    it('sends reasoning_effort only when configured', function () {
+        Http::fake(['groq.test/*' => Http::response(groqOk())]);
+
+        groq()->generate(aiRequest());
+        (new GroqProvider('K', 'groq-test', 'https://groq.test', 5, 'low'))->generate(aiRequest());
+
+        $sent = Http::recorded()->map(fn ($pair) => $pair[0]->data());
+        expect($sent[0])->not->toHaveKey('reasoning_effort')->and($sent[1]['reasoning_effort'])->toBe('low');
+    });
 
     it('handles content filter and empty responses', function () {
         Http::fake(['groq.test/*' => Http::sequence()
