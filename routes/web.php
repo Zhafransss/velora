@@ -114,3 +114,7 @@ Route::get('/sitemap.xml', function () {
         ->view('sitemap', ['urls' => $urls])
         ->header('Content-Type', 'application/xml');
 });
+// Invoice PDF (hanya admin yang login ke panel Filament)
+Route::get('/admin/invoices/{invoice}/pdf', \App\Http\Controllers\InvoicePdfController::class)
+    ->middleware(\Filament\Http\Middleware\Authenticate::class)
+    ->name('invoices.pdf');
