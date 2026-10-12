@@ -16,6 +16,33 @@ class AppServiceProvider extends ServiceProvider
     {
         // Scoped: instance baru per request/job agar konteks tenant tidak bocor antar eksekusi.
         $this->app->scoped(\App\Support\Tenancy\CurrentTenant::class);
+
+        $this->app->bind(\App\Services\Ai\AiGateway::class, function () {
+            $cfg = config('ai');
+            $classes = ['gemini' => \App\Services\Ai\GeminiProvider::class, 'groq' => \App\Services\Ai\GroqProvider::class];
+            $providers = [];
+            $pricing = [];
+
+            foreach ($cfg['order'] as $name) {
+                $p = $cfg['providers'][$name] ?? null;
+
+                // Provider tanpa API key dilewati, sehingga satu key cukup untuk mulai.
+                if (! isset($classes[$name]) || ! $p || empty($p['api_key'])) {
+                    continue;
+                }
+
+                $providers[] = new $classes[$name]($p['api_key'], $p['model'], $p['base_url'], $p['timeout']);
+                $pricing[$name] = [
+                    'input' => $p['price_input_per_mtok'] !== null ? (float) $p['price_input_per_mtok'] : null,
+                    'output' => $p['price_output_per_mtok'] !== null ? (float) $p['price_output_per_mtok'] : null,
+                ];
+            }
+
+            return new \App\Services\Ai\AiGateway(
+                $providers, $cfg['max_output_tokens'], $cfg['temperature'],
+                $cfg['retries'], $cfg['retry_delay_ms'], $cfg['budget_seconds'], $pricing,
+            );
+        });
     }
 
     /**
