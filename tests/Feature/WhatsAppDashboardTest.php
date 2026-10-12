@@ -206,6 +206,28 @@ describe('connecting and QR', function () {
             ->assertSet('error', 'Layanan WhatsApp belum dapat dihubungi. Coba lagi beberapa saat lagi.');
     });
 
+    it('clears a stale "cannot reach" error by itself once the connector is back', function () {
+        [$user, $tenant, $bot] = wdTenant();
+        wdChannel($tenant, $bot); // status "created": halaman tidak menyinkronkan status
+        wdFake(['connector.test/*' => fn () => throw new ConnectionException('cURL error 7: refused')]);
+
+        $c = Livewire::actingAs($user)->test(WhatsAppConnection::class)->call('connect')
+            ->assertSet('error', 'Layanan WhatsApp belum dapat dihubungi. Coba lagi beberapa saat lagi.');
+
+        // Konektor hidup lagi (kanal belum dikenal di sana -> 404) pada polling berikutnya.
+        wdFake(['connector.test/*' => Http::response(['error' => ['code' => 'CHANNEL_NOT_FOUND']], 404)]);
+        $c->call('$refresh')->assertSet('error', null)->assertDontSee('belum dapat dihubungi');
+    });
+
+    it('keeps the error while the connector is still down', function () {
+        [$user, $tenant, $bot] = wdTenant();
+        wdChannel($tenant, $bot);
+        wdFake(['connector.test/*' => fn () => throw new ConnectionException('cURL error 7: refused')]);
+
+        Livewire::actingAs($user)->test(WhatsAppConnection::class)->call('connect')->call('$refresh')
+            ->assertSee('Layanan WhatsApp belum dapat dihubungi');
+    });
+
     it('warns when the bot is not active because it will not reply', function () {
         [$user, $tenant, $bot] = wdTenant(botStatus: 'draft');
         wdChannel($tenant, $bot, 'connected');

@@ -103,6 +103,8 @@ class WhatsAppConnection extends Component
             // Payload QR hanya diambil untuk pengguna yang berhak melihatnya (viewer tidak pernah memicu pengambilan QR).
             $qrImage = $this->syncFromConnector($channel, $adapter, $qrRenderer, fetchQr: $this->canManage());
             $channel->refresh();
+        } elseif ($channel !== null && $this->error !== null) {
+            $this->clearErrorIfConnectorIsBack($channel, $adapter);
         }
 
         return view('livewire.tenant.whatsapp-connection', [
@@ -113,6 +115,25 @@ class WhatsAppConnection extends Component
             'pollSeconds' => ($channel && in_array($channel->status, self::TRANSIENT, true)) ? 3 : 10,
             'labels' => self::labels(),
         ])->layout('tenant.layouts.app', ['title' => 'WhatsApp']);
+    }
+
+    /**
+     * Galat "layanan belum dapat dihubungi" tidak boleh menempel setelah konektor hidup kembali. Pada status yang tidak
+     * disinkronkan (mis. belum dihubungkan), satu pemeriksaan ringan: bila konektor menjawab (walau "kanal tidak dikenal"),
+     * layanan dianggap kembali dan galat dihapus.
+     */
+    private function clearErrorIfConnectorIsBack(Channel $channel, WhatsAppChannelAdapter $adapter): void
+    {
+        try {
+            $adapter->status($channel);
+            $this->error = null;
+        } catch (ChannelSendException $e) {
+            if ($e->type === ChannelSendException::NOT_FOUND) {
+                $this->error = null; // konektor menjawab; kanal memang belum dimulai di sana
+            }
+        } catch (\Throwable) {
+            // tetap tampilkan galat terakhir
+        }
     }
 
     /** @return string|null data URI gambar QR bila sedang menunggu pemindaian */
