@@ -11,7 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'tenant' => \App\Http\Middleware\SetCurrentTenant::class,
+            'subscribed' => \App\Http\Middleware\EnsureSubscribed::class,
+        ]);
+
+        $middleware->redirectUsersTo('/app');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

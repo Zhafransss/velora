@@ -1,0 +1,32 @@
+@extends('tenant.layouts.guest')
+@section('title', 'Daftar')
+@section('content')
+    <h1>Buat akun</h1>
+    <p class="muted">Pendaftaran gratis. Fitur dapat dipakai setelah workspace Anda berlangganan.</p>
+
+    <form method="POST" action="{{ route('register') }}">
+        @csrf
+        <label for="name">Nama Anda</label>
+        <input id="name" name="name" value="{{ old('name') }}" required autofocus autocomplete="name">
+        @error('name')<div class="err">{{ $message }}</div>@enderror
+
+        <label for="workspace_name">Nama bisnis / workspace</label>
+        <input id="workspace_name" name="workspace_name" value="{{ old('workspace_name') }}" required>
+        @error('workspace_name')<div class="err">{{ $message }}</div>@enderror
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" value="{{ old('email') }}" required autocomplete="username">
+        @error('email')<div class="err">{{ $message }}</div>@enderror
+
+        <label for="password">Password (min. 8 karakter)</label>
+        <input id="password" name="password" type="password" required autocomplete="new-password">
+        @error('password')<div class="err">{{ $message }}</div>@enderror
+
+        <label for="password_confirmation">Ulangi password</label>
+        <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password">
+
+        <button class="btn block" type="submit">Daftar</button>
+    </form>
+
+    <p class="muted" style="margin-top:16px">Sudah punya akun? <a href="{{ route('login') }}">Masuk</a></p>
+@endsection
