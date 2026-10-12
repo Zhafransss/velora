@@ -118,3 +118,5 @@ Route::get('/sitemap.xml', function () {
 Route::get('/admin/invoices/{invoice}/pdf', \App\Http\Controllers\InvoicePdfController::class)
     ->middleware(\Filament\Http\Middleware\Authenticate::class)
     ->name('invoices.pdf');
+
+require __DIR__ . '/tenant.php';

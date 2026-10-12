@@ -31,4 +31,27 @@ class Tenant extends Model
     {
         return $this->hasOne(BusinessProfile::class);
     }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function currentSubscription(): HasOne
+    {
+        return $this->hasOne(Subscription::class)->latestOfMany();
+    }
+
+    /** Gerbang akses fitur: tenant harus aktif DAN punya langganan yang layak. */
+    public function hasActiveSubscription(): bool
+    {
+        if ($this->status !== self::STATUS_ACTIVE) {
+            return false;
+        }
+
+        return $this->subscriptions()
+            ->whereIn('status', Subscription::ENTITLED_STATUSES)
+            ->get()
+            ->contains(fn (Subscription $s) => $s->isEntitled());
+    }
 }

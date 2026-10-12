@@ -290,6 +290,7 @@ Dicatat di RTM bagian Hutang Teknis. Yang **harus** selesai sebelum ada pengguna
 | DEC-08 | 2026-10-11 | Tabel katalog tenant: `catalog_services` | PRD: `services` |
 | DEC-09 | 2026-10-11 | Penomoran FR mengikuti PRD 4.1 (FR-001–016) | PRD bagian 6 |
 | DEC-10 | 2026-10-11 | Dashboard tenant di `/app` pada domain yang sama | – (default, boleh diubah) |
+| DEC-11 | 2026-10-12 | Registrasi publik terbuka; akses fitur ditentukan status langganan workspace (trialing/active dan periode belum lewat), bukan persetujuan admin per akun. Tanpa langganan: dashboard + halaman langganan saja. Aktivasi tetap manual setelah pembayaran dicatat (DEC-07) | Menutup OQ-04 (sebelumnya: invite-only direkomendasikan) |
 
 ---
 
@@ -300,7 +301,7 @@ Dicatat di RTM bagian Hutang Teknis. Yang **harus** selesai sebelum ada pengguna
 | OQ-01 | Jangka waktu target 5 tenant berbayar (asumsi 3–6 bulan setelah pilot) | Finalisasi BG-01 |
 | OQ-02 | Harga paket Small dan Medium | Tahap 4 (setelah biaya per pesan terukur) |
 | OQ-03 | Pembeda paket Medium tanpa widget (selain kuota 1.000, riwayat penuh) | Pemasaran paket |
-| OQ-04 | Registrasi publik atau invite-only saat pilot | Tahap 1 |
+| OQ-04 | ~~Registrasi publik atau invite-only~~ — **Diputuskan DEC-11** (publik + gerbang langganan) | – |
 | OQ-05 | Retensi percakapan dan prosedur penghapusan data | Pilot dengan pelanggan nyata |
 | OQ-06 | Notifikasi ke pemilik saat bot gagal menjawab (usulan minimal pengganti human handover) | Tahap 3 |
 | OQ-07 | Penyimpanan auth Baileys produksi: direktori persisten vs MySQL terenkripsi | Akhir Tahap 0 |
