@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Tenant;
 
-use App\Models\TenantMember;
 use App\Support\Tenancy\CurrentTenant;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -66,12 +65,7 @@ class BusinessProfileForm extends Component
 
     public function canEdit(): bool
     {
-        $tenant = app(CurrentTenant::class)->get();
-
-        return TenantMember::where('tenant_id', $tenant?->id)
-            ->where('user_id', auth()->id())
-            ->whereIn('role', [TenantMember::ROLE_OWNER, TenantMember::ROLE_ADMIN])
-            ->exists();
+        return app(CurrentTenant::class)->userCanWrite(auth()->user());
     }
 
     public function render()

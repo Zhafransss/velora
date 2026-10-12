@@ -14,6 +14,9 @@
             <img src="{{ asset('images/veloradigital.webp') }}" alt="Velora Digital">
             <a class="l" href="{{ route('app.dashboard') }}">Dashboard</a>
             <a class="l" href="{{ route('app.business-profile') }}">Profil Bisnis</a>
+            <a class="l" href="{{ route('app.products') }}">Produk</a>
+            <a class="l" href="{{ route('app.services') }}">Layanan</a>
+            <a class="l" href="{{ route('app.faqs') }}">FAQ</a>
             <a class="l" href="{{ route('app.subscription') }}">Langganan</a>
             <span class="sp"></span>
             <span class="muted">{{ auth()->user()->name }}</span>
