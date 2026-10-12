@@ -6,6 +6,7 @@ use App\Filament\Resources\Tenants\TenantResource;
 use App\Models\Tenant;
 use App\Services\Admin\SubscriptionService;
 use App\Services\Admin\TenantStatusService;
+use App\Services\Plans\Entitlements;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -28,12 +29,22 @@ class ViewTenant extends ViewRecord
                 ->modalHeading('Aktifkan langganan')
                 ->modalDescription('Dicatat setelah pembayaran diterima. Langganan yang masih berlaku akan digantikan paket baru.')
                 ->schema([
-                    Select::make('plan')->label('Paket')->options(self::planOptions())->required()->default('small'),
-                    TextInput::make('days')->label('Lama (hari)')->numeric()->minValue(1)->maxValue(SubscriptionService::MAX_DAYS)->default(30)->required(),
+                    Select::make('plan')->label('Paket')->options(self::planOptions())->required()->default('small')->live()
+                        // Harga dan lama terisi otomatis dari paket; tetap bisa diubah (mis. diskon).
+                        ->afterStateUpdated(function ($state, $set) {
+                            $set('price', config("plans.{$state}.price_idr"));
+                            $set('days', config("plans.{$state}.period_days", 30));
+                        }),
+                    TextInput::make('price')->label('Harga disepakati (Rp)')->numeric()->minValue(0)->default(config('plans.small.price_idr'))
+                        ->helperText('Kosong = harga paket (paket penawaran tanpa harga tetap dicatat tanpa harga).'),
+                    TextInput::make('days')->label('Lama (hari)')->numeric()->minValue(1)->maxValue(SubscriptionService::MAX_DAYS)->default(config('plans.small.period_days', 30))->required(),
                     Textarea::make('notes')->label('Catatan pembayaran (mis. nomor invoice, tanggal transfer)')->rows(2)->maxLength(500),
                 ])
                 ->action(function (array $data, Tenant $record, SubscriptionService $service) {
-                    $subscription = $service->activate($record, $data['plan'], (int) $data['days'], $data['notes'] ?? null);
+                    $subscription = $service->activate(
+                        $record, $data['plan'], (int) $data['days'], $data['notes'] ?? null,
+                        ($data['price'] ?? '') === '' || $data['price'] === null ? null : (int) $data['price'],
+                    );
 
                     Notification::make()->success()->title('Langganan aktif')
                         ->body(strtoupper($subscription->plan_code) . ' sampai ' . $subscription->current_period_end->format('d M Y'))->send();
@@ -68,6 +79,7 @@ class ViewTenant extends ViewRecord
     /** @return array<string, string> */
     private static function planOptions(): array
     {
-        return collect(SubscriptionService::planCodes())->mapWithKeys(fn ($code) => [$code => strtoupper($code)])->all();
+        return collect(Entitlements::allPlans())
+            ->mapWithKeys(fn (Entitlements $e, $code) => [$code => strtoupper($e->label) . ' — ' . $e->priceLabel() . ' / ' . $e->periodDays . ' hari'])->all();
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Services\Usage;
 
-use App\Models\Subscription;
+use App\Services\Plans\Entitlements;
 use App\Models\Tenant;
 use Carbon\CarbonInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -25,23 +25,10 @@ class QuotaManager
     /** Percobaan ulang transaksi bila MySQL melaporkan deadlock/lock-wait (konkurensi tinggi pada satu tenant). */
     private const DEADLOCK_RETRIES = 5;
 
-    /** Batas harian tenant. null = tanpa batas keras. Tanpa langganan layak = 0 (diblokir). */
+    /** Batas harian tenant (dari entitlement paket). null = tanpa batas keras. Tanpa langganan layak = 0 (diblokir). */
     public function limitFor(Tenant $tenant): ?int
     {
-        $subscription = $tenant->subscriptions()
-            ->whereIn('status', Subscription::ENTITLED_STATUSES)
-            ->latest('id')
-            ->get()
-            ->first(fn (Subscription $s) => $s->isEntitled());
-
-        if ($subscription === null) {
-            return 0;
-        }
-
-        $plan = config("plans.{$subscription->plan_code}");
-
-        // Paket tak dikenal: gagal tertutup, bukan tanpa batas.
-        return $plan === null ? 0 : $plan['daily_ai_messages'];
+        return Entitlements::forTenant($tenant)->dailyAiMessages;
     }
 
     public function reserve(Tenant $tenant, string $key, string $purpose = 'chat', ?int $messageId = null, ?CarbonInterface $now = null): QuotaDecision

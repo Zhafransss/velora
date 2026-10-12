@@ -1,6 +1,15 @@
 <div wire:poll.5s>
     <h1>Percakapan</h1>
-    <p class="muted">Pesan dari pelanggan Anda dan balasan chatbot. Daftar menampilkan {{ $conversations->count() }} percakapan terbaru.</p>
+    <p class="muted">Pesan dari pelanggan Anda dan balasan chatbot. Daftar menampilkan {{ $conversations->count() }} percakapan terbaru.
+        Percakapan dihapus otomatis dari sistem setelah {{ $retentionDays }} hari.</p>
+
+    @if ($historyDays !== null)
+        <div class="lock">
+            Paket <strong>{{ $planLabel }}</strong> menampilkan riwayat <strong>{{ $historyDays }} hari terakhir</strong>.
+            Percakapan lebih lama tetap tersimpan sampai dihapus otomatis, tetapi baru dapat dilihat dengan paket yang mencakup riwayat penuh.
+            <a href="{{ route('app.subscription') }}">Lihat paket</a>.
+        </div>
+    @endif
 
     <div class="row">
         <div class="card" style="flex:1 1 260px; max-height:70vh; overflow:auto">

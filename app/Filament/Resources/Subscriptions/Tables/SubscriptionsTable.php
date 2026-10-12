@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Subscriptions\Tables;
 
 use App\Models\Subscription;
 use App\Services\Admin\SubscriptionService;
+use App\Services\Plans\Entitlements;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -23,6 +24,7 @@ class SubscriptionsTable
             ->columns([
                 TextColumn::make('tenant.name')->label('Workspace')->searchable()->sortable(),
                 TextColumn::make('plan_code')->label('Paket')->badge()->formatStateUsing(fn (string $state) => strtoupper($state)),
+                TextColumn::make('price_idr')->label('Harga')->formatStateUsing(fn ($state) => Entitlements::rupiah($state) ?? '—')->toggleable(),
                 TextColumn::make('status')->label('Status')->badge()
                     ->color(fn (Subscription $s) => $s->isEntitled() ? 'success' : ($s->status === Subscription::STATUS_ACTIVE ? 'danger' : 'warning'))
                     ->formatStateUsing(fn (Subscription $s) => $s->isEntitled() ? $s->status : ($s->status === Subscription::STATUS_ACTIVE ? 'active (periode habis)' : $s->status)),
