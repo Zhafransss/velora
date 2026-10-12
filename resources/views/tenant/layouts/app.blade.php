@@ -22,6 +22,8 @@
             <a class="l" href="{{ route('app.whatsapp') }}">WhatsApp</a>
             <a class="l" href="{{ route('app.conversations') }}">Percakapan</a>
             <a class="l" href="{{ route('app.subscription') }}">Langganan</a>
+            @php $unreadNotifications = \App\Models\TenantNotification::whereNull('read_at')->count(); @endphp
+            <a class="l" href="{{ route('app.notifications') }}">Notifikasi @if ($unreadNotifications > 0)<span class="count">{{ $unreadNotifications > 99 ? '99+' : $unreadNotifications }}</span>@endif</a>
             <span class="sp"></span>
             <span class="muted">{{ auth()->user()->name }}</span>
             <form method="POST" action="{{ route('logout') }}">

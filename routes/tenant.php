@@ -11,6 +11,7 @@ use App\Livewire\Tenant\Catalog\FaqsManager;
 use App\Livewire\Tenant\Catalog\ProductsManager;
 use App\Livewire\Tenant\Catalog\ServicesManager;
 use App\Livewire\Tenant\ConversationHistory;
+use App\Livewire\Tenant\NotificationsInbox;
 use App\Livewire\Tenant\Dashboard;
 use App\Livewire\Tenant\WhatsAppConnection;
 use Illuminate\Support\Facades\Route;
@@ -44,6 +45,8 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'verified', 'tenant'])->prefix('app')->name('app.')->group(function () {
     Route::get('/', Dashboard::class)->name('dashboard');
     Route::view('/subscription', 'tenant.subscription')->name('subscription');
+    // Tanpa gerbang langganan: pemilik harus tetap bisa membaca peringatan "langganan berakhir" (DEC-16).
+    Route::get('/notifications', NotificationsInbox::class)->name('notifications');
 
     // Fitur di bawah ini terkunci sampai workspace punya langganan aktif.
     Route::middleware('subscribed')->group(function () {

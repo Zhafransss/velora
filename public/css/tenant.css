@@ -24,3 +24,4 @@ nav.top { background:#fff; border-bottom:1px solid var(--line); }
 nav.top .in { max-width:960px; margin:0 auto; padding:10px 16px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
 nav.top img { height:36px; } nav.top .sp { flex:1; } nav.top a.l { text-decoration:none; color:var(--ink); font-weight:500; }
 .row { display:flex; gap:16px; flex-wrap:wrap; } .row > * { flex:1 1 220px; }
+.count { display:inline-block; min-width:18px; padding:0 6px; border-radius:999px; background:var(--bad); color:#fff; font-size:.75rem; font-weight:700; text-align:center; line-height:18px; vertical-align:middle; }

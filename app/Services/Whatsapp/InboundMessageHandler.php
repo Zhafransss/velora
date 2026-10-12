@@ -6,6 +6,7 @@ use App\Jobs\ProcessInboundMessage;
 use App\Models\Channel;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Services\Notifications\TenantNotifier;
 use App\Support\Tenancy\CurrentTenant;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Carbon;
@@ -83,12 +84,19 @@ class InboundMessageHandler
         $me = $payload['me'] ?? null;
         $account = is_array($me) ? ($me['id'] ?? null) : (is_string($me) ? $me : null);
 
+        $previous = $channel->status;
+
         // Update langsung lewat query terpusat: konteks tenant tidak ada pada jalur ini, dan hanya status yang disentuh.
         Channel::withoutTenancy()->whereKey($channel->id)->update(array_filter([
             'status' => $payload['state'],
             'external_account_id' => is_string($account) ? Str::limit($account, 100, '') : null,
             'last_status_at' => now(),
         ], fn ($v) => $v !== null));
+
+        // Kanal yang sebelumnya baik lalu putus permanen: beri tahu pemilik (DEC-16). 'reconnecting' bersifat sementara.
+        if (in_array($payload['state'], ['logged_out', 'failed'], true) && $previous !== $payload['state']) {
+            app(TenantNotifier::class)->channelDown($channel->tenant()->firstOrFail(), $channel, $payload['state']);
+        }
 
         return self::ACCEPTED;
     }

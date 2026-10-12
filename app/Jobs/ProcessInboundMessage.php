@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use App\Services\Ai\AiGateway;
 use App\Services\Ai\AiGatewayException;
 use App\Services\Ai\PromptBuilder;
+use App\Services\Notifications\TenantNotifier;
 use App\Services\Usage\QuotaManager;
 use App\Services\Whatsapp\WhatsAppChannelAdapter;
 use App\Support\Tenancy\CurrentTenant;
@@ -72,6 +73,13 @@ class ProcessInboundMessage implements ShouldQueue
         if ($reason = $this->skipReason($tenant, $channel, $bot)) {
             $message->update(['status' => Message::SKIPPED, 'error_type' => $reason]);
 
+            // Pemilik perlu tahu mengapa pelanggannya tidak dibalas (DEC-16).
+            match ($reason) {
+                'bot_not_active' => app(TenantNotifier::class)->botInactive($tenant),
+                'no_subscription' => app(TenantNotifier::class)->subscriptionInactive($tenant),
+                default => null, // tenant dinonaktifkan/kanal dicabut: pemilik tidak melihat dashboard atau sudah tahu
+            };
+
             return null;
         }
 
@@ -81,6 +89,7 @@ class ProcessInboundMessage implements ShouldQueue
         if ($decision->exceeded()) {
             // Tidak ada pemanggilan AI. Pemilik dapat dinotifikasi kelak (OQ-06).
             $message->update(['status' => Message::QUOTA_EXCEEDED, 'error_type' => 'daily_quota']);
+            app(TenantNotifier::class)->quotaExceeded($tenant);
 
             return null;
         }
@@ -95,6 +104,7 @@ class ProcessInboundMessage implements ShouldQueue
         } catch (AiGatewayException $e) {
             // Pelanggan tidak mendapat nilai: unit dikembalikan, dan pelanggan menerima pesan fallback bot.
             $quota->release($tenant, $key, $message->id);
+            app(TenantNotifier::class)->aiFailed($tenant);
 
             return $this->finish($message, Message::FAILED, $e->lastType() ?? 'ai_failed', $bot->fallback_message, Message::SOURCE_FALLBACK);
         } catch (InvalidArgumentException) {

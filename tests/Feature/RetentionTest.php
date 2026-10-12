@@ -179,7 +179,7 @@ describe('conversations:prune', function () {
         $this->artisan('conversations:prune')->assertSuccessful();
 
         $audit = AuditLog::sole();
-        expect($audit->action)->toBe('system.retention_pruned')->and($audit->after)->toEqual(['messages' => 1, 'conversations' => 1, 'ai_test_messages' => 0])
+        expect($audit->action)->toBe('system.retention_pruned')->and($audit->after)->toEqual(['messages' => 1, 'conversations' => 1, 'ai_test_messages' => 0, 'tenant_notifications' => 0])
             ->and(json_encode($audit->getAttributes()))->not->toContain('Rahasia')->not->toContain('isi ');
         Log::shouldHaveReceived('info')->withArgs(fn ($m, $ctx) => $m === 'retention.pruned' && ! str_contains(json_encode($ctx), 'Rahasia'))->once();
     });

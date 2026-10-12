@@ -15,6 +15,10 @@ class Dashboard extends Component
             'tenant' => $tenant,
             'subscription' => $tenant?->currentSubscription,
             'isSubscribed' => $tenant?->hasActiveSubscription() ?? false,
+            // Peringatan belum dibaca yang paling penting, ditampilkan di atas dashboard (DEC-16).
+            'alerts' => \App\Models\TenantNotification::whereNull('read_at')
+                ->whereIn('severity', ['critical', 'warning'])
+                ->orderByRaw("case severity when 'critical' then 0 else 1 end")->orderByDesc('last_occurred_at')->limit(3)->get(),
         ])->layout('tenant.layouts.app', ['title' => 'Dashboard']);
     }
 }

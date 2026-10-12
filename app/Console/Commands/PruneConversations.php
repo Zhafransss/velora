@@ -51,9 +51,13 @@ class PruneConversations extends Command
                 ->whereRaw('coalesce(last_message_at, created_at) < ?', [$cutoff]);
         }, $dry);
 
+        // Notifikasi dashboard punya masa simpan sendiri (retention.notification_days); tidak memuat isi pesan.
+        $notificationCutoff = now()->subDays(max(1, (int) config('retention.notification_days')));
+        $counts['tenant_notifications'] = $this->purge('tenant_notifications', fn ($q) => $q->where('created_at', '<', $notificationCutoff), $dry);
+
         $total = array_sum($counts);
         $label = $dry ? 'akan dihapus' : 'dihapus';
-        $this->info("Retensi {$days} hari (sebelum {$cutoff->format('d M Y H:i')}): {$counts['messages']} pesan, {$counts['conversations']} percakapan, {$counts['ai_test_messages']} riwayat tes {$label}.");
+        $this->info("Retensi {$days} hari (sebelum {$cutoff->format('d M Y H:i')}): {$counts['messages']} pesan, {$counts['conversations']} percakapan, {$counts['ai_test_messages']} riwayat tes {$label}; {$counts['tenant_notifications']} notifikasi lama {$label}.");
 
         if (! $dry && $total > 0) {
             // Hanya angka agregat — tidak pernah isi pesan.
