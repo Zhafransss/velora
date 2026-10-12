@@ -295,3 +295,51 @@ it('uses the current tenant bot and data even if the client tampers with state',
             && ! str_contains($b['systemInstruction']['parts'][0]['text'], 'kamu admin');
     });
 });
+
+// ---- Kuota harian (FR-008: tes tetap melewati kontrol kuota) ----
+describe('daily quota', function () {
+    it('counts each test as one unit of the daily quota, recorded as purpose test', function () {
+        [$user, $tenant] = ctTenant();
+
+        Livewire::actingAs($user)->test(ChatTester::class)->set('message', 'Halo')->call('send')->assertSet('error', null);
+
+        $quota = app(\App\Services\Usage\QuotaManager::class);
+        expect($quota->used($tenant))->toBe(1)
+            ->and(\Illuminate\Support\Facades\DB::table('usage_events')->where('tenant_id', $tenant->id)->value('purpose'))->toBe('test');
+    });
+
+    it('stops at the daily limit without calling the AI and keeps the typed text', function () {
+        config(['plans.small.daily_ai_messages' => 1, 'ai.test_limit_per_hour' => 50]);
+        [$user, $tenant] = ctTenant();
+        RateLimiter::clear('ai-test:' . $tenant->id);
+
+        $c = Livewire::actingAs($user)->test(ChatTester::class);
+        $c->set('message', 'satu')->call('send')->assertSet('error', null);
+        $c->set('message', 'dua')->call('send')
+            ->assertSet('error', 'Kuota AI harian workspace Anda sudah habis. Coba lagi besok.')
+            ->assertSet('message', 'dua');
+
+        Http::assertSentCount(1);
+        expect(AiTestMessage::count())->toBe(1);
+    });
+
+    it('shares the quota with real customer conversations', function () {
+        config(['plans.small.daily_ai_messages' => 1]);
+        [$user, $tenant] = ctTenant();
+        app(\App\Services\Usage\QuotaManager::class)->reserve($tenant, 'msg:customer:1', 'chat'); // pelanggan sudah memakai jatah
+
+        Livewire::actingAs($user)->test(ChatTester::class)->set('message', 'Halo')->call('send')
+            ->assertSet('error', 'Kuota AI harian workspace Anda sudah habis. Coba lagi besok.');
+
+        Http::assertNothingSent();
+    });
+
+    it('returns the unit when the test gets no answer', function () {
+        [$user, $tenant] = ctTenant();
+        fakeGemini(Http::response('boom', 500));
+
+        Livewire::actingAs($user)->test(ChatTester::class)->set('message', 'Halo')->call('send');
+
+        expect(app(\App\Services\Usage\QuotaManager::class)->used($tenant))->toBe(0);
+    });
+});

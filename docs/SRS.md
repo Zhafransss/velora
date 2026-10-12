@@ -303,8 +303,8 @@ Dicatat di RTM bagian Hutang Teknis. Yang **harus** selesai sebelum ada pengguna
 | OQ-02 | Harga paket Small dan Medium | Tahap 4 (setelah biaya per pesan terukur) |
 | OQ-03 | Pembeda paket Medium tanpa widget (selain kuota 1.000, riwayat penuh) | Pemasaran paket |
 | OQ-04 | ~~Registrasi publik atau invite-only~~ — **Diputuskan DEC-11** (publik + gerbang langganan) | – |
-| OQ-05 | Retensi percakapan dan prosedur penghapusan data | Pilot dengan pelanggan nyata |
-| OQ-06 | Notifikasi ke pemilik saat bot gagal menjawab (usulan minimal pengganti human handover) | Tahap 3 |
+| OQ-05 | Retensi percakapan dan prosedur penghapusan data. **Sementara:** `messages` disimpan tanpa batas waktu; belum ada penghapusan | Pilot dengan pelanggan nyata |
+| OQ-06 | Notifikasi ke pemilik saat bot gagal menjawab / kuota habis (usulan minimal pengganti human handover). **Sementara:** pesan yang gagal/terlewat hanya tercatat (status `failed`/`quota_exceeded`/`skipped`); pelanggan menerima `fallback_message` bila AI gagal, dan TIDAK menerima apa pun saat kuota habis | Tahap 3 |
 | OQ-07 | Penyimpanan auth Baileys produksi: direktori persisten vs MySQL terenkripsi | Akhir Tahap 0 |
 | OQ-08 | Deadline dan alur deploy (manual atau CI) | Perencanaan Tahap 1 |
 | OQ-09 | Strategi retrieval knowledge base (konteks penuh vs pencarian) | Tahap 2 — **sementara: konteks penuh ber-batas (AI_CONTEXT_MAX_CHARS); finalisasi setelah uji akurasi 2.6** |

@@ -120,3 +120,8 @@ Route::get('/admin/invoices/{invoice}/pdf', \App\Http\Controllers\InvoicePdfCont
     ->name('invoices.pdf');
 
 require __DIR__ . '/tenant.php';
+
+// Webhook dari konektor WhatsApp (tanpa sesi/CSRF; diamankan tanda tangan HMAC).
+Route::post('/webhooks/whatsapp', \App\Http\Controllers\ConnectorWebhookController::class)
+    ->middleware('throttle:600,1')
+    ->name('webhooks.whatsapp');

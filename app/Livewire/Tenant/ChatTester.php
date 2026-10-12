@@ -8,7 +8,9 @@ use App\Support\Tenancy\CurrentTenant;
 use App\Services\Ai\AiGateway;
 use App\Services\Ai\AiGatewayException;
 use App\Services\Ai\PromptBuilder;
+use App\Services\Usage\QuotaManager;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Livewire\Component;
 
 /**
@@ -53,6 +55,16 @@ class ChatTester extends Component
             return;
         }
 
+        // FR-008: tes memakai kuota harian yang sama dengan percakapan pelanggan.
+        $quota = app(QuotaManager::class);
+        $quotaKey = 'test:' . $tenant->id . ':' . Str::ulid();
+
+        if ($quota->reserve($tenant, $quotaKey, 'test')->exceeded()) {
+            $this->error = 'Kuota AI harian workspace Anda sudah habis. Coba lagi besok.';
+
+            return;
+        }
+
         $question = $this->message;
         $history = $this->turns;
 
@@ -60,6 +72,7 @@ class ChatTester extends Component
             $built = app(PromptBuilder::class)->build($bot, $question, $history);
             $answer = app(AiGateway::class)->generate($built->request, 'test');
         } catch (AiGatewayException $e) {
+            $quota->release($tenant, $quotaKey); // tidak ada jawaban: unit dikembalikan
             $this->recordTest($bot, $question, null, 'failed', $e->lastType());
             $this->error = 'Layanan AI sedang tidak tersedia. Silakan coba lagi beberapa saat lagi.';
 
