@@ -17,6 +17,9 @@ class AppServiceProvider extends ServiceProvider
         // Scoped: instance baru per request/job agar konteks tenant tidak bocor antar eksekusi.
         $this->app->scoped(\App\Support\Tenancy\CurrentTenant::class);
 
+        $this->app->bind(\App\Services\Whatsapp\WhatsAppChannelAdapter::class, fn () => \App\Services\Whatsapp\BaileysConnectorAdapter::fromConfig());
+        $this->app->bind(\App\Services\Whatsapp\WebhookSignature::class, fn () => \App\Services\Whatsapp\WebhookSignature::fromConfig());
+
         $this->app->bind(\App\Services\Ai\PromptBuilder::class, fn () => \App\Services\Ai\PromptBuilder::fromConfig());
 
         $this->app->bind(\App\Services\Ai\AiGateway::class, function () {
