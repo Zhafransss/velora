@@ -25,6 +25,8 @@ class User extends Authenticatable implements FilamentUser
         'password',
     ];
 
+    // is_platform_admin sengaja tidak mass assignable agar tidak bisa di-set lewat input request.
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -45,11 +47,13 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_platform_admin' => 'boolean',
         ];
     }
-    
+
+    /** Hanya admin platform Velora yang boleh masuk panel Filament (/admin). */
     public function canAccessPanel(Panel $panel): bool
     {
-        return true;
+        return $this->is_platform_admin;
     }
 }

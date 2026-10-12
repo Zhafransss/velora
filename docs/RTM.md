@@ -53,8 +53,8 @@ Rujukan: `docs/SRS.md`. Status: Not Started → In Progress → Done (atau Defer
 
 | ID | Temuan | Terkait | Prioritas | Status |
 |----|--------|---------|-----------|--------|
-| TD-01 | `User::canAccessPanel()` selalu `true` | FR-003 | **M, wajib sebelum ada user tenant** | Not Started |
-| TD-02 | `DatabaseSeeder` membuat `test@example.com`; pastikan tidak ada di produksi | FR-003 | M | Not Started |
+| TD-01 | `User::canAccessPanel()` selalu `true` | FR-003 | **M, wajib sebelum ada user tenant** | Done (tests/Feature/PanelAccessTest.php) |
+| TD-02 | `DatabaseSeeder` membuat `test@example.com`; pastikan tidak ada di produksi | FR-003 | M | Done (tests/Feature/PanelAccessTest.php) |
 | TD-03 | `portfolio->year` dan `$p->tag` dipakai tetapi kolom tidak ada | FR-017 | S | Not Started |
 | TD-04 | `ServiceController::show` tanpa cek null/`is_active` | FR-017 | S | Not Started |
 | TD-05 | Form kontak tanpa rate limit | FR-017 | S | Not Started |

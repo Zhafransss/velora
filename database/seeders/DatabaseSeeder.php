@@ -15,9 +15,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Akun dummy hanya untuk lingkungan non-produksi (password default factory: "password").
+        if (app()->environment('production')) {
+            return;
+        }
 
-        User::factory()->create([
+        User::factory()->platformAdmin()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
