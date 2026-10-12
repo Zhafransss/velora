@@ -24,7 +24,7 @@ class Subscription extends Model
     /** Hanya status ini yang boleh memakai fitur. past_due/suspended/canceled/expired = terkunci. */
     public const ENTITLED_STATUSES = [self::STATUS_TRIALING, self::STATUS_ACTIVE];
 
-    protected $fillable = ['tenant_id', 'plan_code', 'status', 'current_period_start', 'current_period_end', 'notes'];
+    protected $fillable = ['tenant_id', 'plan_code', 'price_idr', 'status', 'current_period_start', 'current_period_end', 'notes'];
 
     protected function casts(): array
     {

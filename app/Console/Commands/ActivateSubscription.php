@@ -30,8 +30,8 @@ class ActivateSubscription extends Command
             return self::FAILURE;
         }
 
-        if (! in_array($plan = $this->argument('plan'), ['small', 'medium', 'enterprise'], true)) {
-            $this->error('Plan harus small, medium, atau enterprise.');
+        if (! in_array($plan = $this->argument('plan'), \App\Services\Admin\SubscriptionService::planCodes(), true)) {
+            $this->error('Plan harus salah satu dari: ' . implode(', ', \App\Services\Admin\SubscriptionService::planCodes()) . '.');
 
             return self::FAILURE;
         }

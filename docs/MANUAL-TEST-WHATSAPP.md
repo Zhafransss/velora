@@ -29,7 +29,7 @@ php artisan mail:test alamat-anda@gmail.com   # memverifikasi kredensial & mengi
 Jika email tidak masuk: cek folder Spam; `mail:test` menampilkan penyebab (mis. `535 authentication failed` = password salah/belum diisi).
 Registrasi tetap berhasil walau SMTP gagal; halaman verifikasi memberi tahu dan menyediakan tombol "Kirim ulang".
 
-## Menjalankan (3 terminal terpisah, semuanya harus hidup)
+## Menjalankan (3 terminal wajib + 1 penjadwal)
 ```bash
 # 1. Web (sudah berjalan di port 8000 jika Anda masih membukanya)
 php artisan serve
@@ -40,7 +40,13 @@ php artisan queue:work --tries=1
 # 3. Konektor WhatsApp
 cd connector
 node --env-file=.env src/index.js
+
+# 4. Penjadwal (opsional untuk uji; WAJIB di produksi lewat cron): retensi 30 hari + pengingat langganan
+php artisan schedule:work
 ```
+Produksi: `* * * * * cd /path/ke/proyek && php artisan schedule:run >> /dev/null 2>&1`. Tanpa penjadwal, percakapan tidak pernah terhapus
+otomatis dan pengingat langganan tidak dibuat (bisa dijalankan manual: `php artisan conversations:prune`, `php artisan notifications:subscription-expiry`).
+
 Pastikan MySQL XAMPP hidup. Setelah mengubah kode PHP, restart terminal 2 (`queue:work` memuat kode saat mulai).
 
 ## Langkah

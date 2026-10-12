@@ -30,18 +30,28 @@ class SubscriptionService
      * Aktifkan paket baru. Langganan yang masih berlaku digantikan (status canceled, riwayat tetap ada) sehingga
      * hanya ada satu langganan berlaku per workspace.
      */
-    public function activate(Tenant $tenant, string $plan, int $days, ?string $notes = null): Subscription
+    /**
+     * @param  int|null  $priceIdr  harga yang disepakati (mis. diskon); null = harga paket di config/plans.php
+     */
+    public function activate(Tenant $tenant, string $plan, int $days, ?string $notes = null, ?int $priceIdr = null): Subscription
     {
         $this->assertPlan($plan);
         $this->assertDays($days);
 
-        return DB::transaction(function () use ($tenant, $plan, $days, $notes) {
+        if ($priceIdr !== null && $priceIdr < 0) {
+            throw new InvalidArgumentException('Price must not be negative.');
+        }
+
+        $price = $priceIdr ?? config("plans.{$plan}.price_idr");
+
+        return DB::transaction(function () use ($tenant, $plan, $days, $notes, $price) {
             $tenant->subscriptions()
                 ->whereIn('status', Subscription::ENTITLED_STATUSES)->get()
                 ->each(fn (Subscription $old) => $this->setStatus($old, Subscription::STATUS_CANCELED, 'Digantikan oleh paket baru'));
 
             $subscription = $tenant->subscriptions()->create([
                 'plan_code' => $plan,
+                'price_idr' => $price,
                 'status' => Subscription::STATUS_ACTIVE,
                 'current_period_start' => now(),
                 'current_period_end' => now()->addDays($days),
@@ -116,6 +126,7 @@ class SubscriptionService
     {
         return [
             'plan_code' => $s->plan_code,
+            'price_idr' => $s->price_idr !== null ? (int) $s->price_idr : null,
             'status' => $s->status,
             'period_start' => $s->current_period_start?->toDateTimeString(),
             'period_end' => $s->current_period_end?->toDateTimeString(),

@@ -4,6 +4,9 @@ namespace App\Livewire\Tenant;
 
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Services\Plans\Entitlements;
+use App\Support\Tenancy\CurrentTenant;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -22,26 +25,46 @@ class ConversationHistory extends Component
 
     public function select(int $id): void
     {
-        $this->selected = Conversation::findOrFail($id)->id;
+        // Hanya percakapan di dalam jendela riwayat paket yang boleh dibuka (id di luar jendela = 404).
+        $this->selected = $this->visibleConversations()->findOrFail($id)->id;
     }
 
     public function render()
     {
-        $conversations = Conversation::with('channel')->orderByDesc('last_message_at')->orderByDesc('id')->limit(self::LIST_LIMIT)->get();
+        $entitlements = Entitlements::forTenant(app(CurrentTenant::class)->get());
+        $since = $entitlements->historySince();
+
+        $conversations = $this->visibleConversations()->with('channel')->orderByDesc('last_message_at')->orderByDesc('id')->limit(self::LIST_LIMIT)->get();
 
         $current = null;
         $messages = collect();
 
         if ($this->selected !== null) {
-            $current = Conversation::findOrFail($this->selected);
-            $messages = $current->messages()->orderByDesc('id')->limit(self::MESSAGE_LIMIT)->get()->reverse()->values();
+            $current = $this->visibleConversations()->findOrFail($this->selected);
+            $messages = $current->messages()
+                ->when($since, fn ($q) => $q->where('created_at', '>=', $since))
+                ->orderByDesc('id')->limit(self::MESSAGE_LIMIT)->get()->reverse()->values();
         }
 
         return view('livewire.tenant.conversation-history', [
             'conversations' => $conversations,
             'current' => $current,
             'messages' => $messages,
+            'historyDays' => $entitlements->historyDays,
+            'planLabel' => $entitlements->label,
+            'retentionDays' => (int) config('retention.conversation_days', 30),
         ])->layout('tenant.layouts.app', ['title' => 'Percakapan']);
+    }
+
+    /** Percakapan yang boleh dilihat menurut entitlement paket (jendela riwayat). */
+    private function visibleConversations(): Builder
+    {
+        $since = Entitlements::forTenant(app(CurrentTenant::class)->get())->historySince();
+
+        return Conversation::query()->when($since, fn (Builder $q) => $q->where(
+            fn (Builder $w) => $w->where('last_message_at', '>=', $since)
+                ->orWhere(fn (Builder $n) => $n->whereNull('last_message_at')->where('created_at', '>=', $since))
+        ));
     }
 
     public static function customerLabel(Conversation $c): string

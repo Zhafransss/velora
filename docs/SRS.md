@@ -40,7 +40,7 @@ Velora AI menjawab masalah itu sebagai layanan berlangganan: pemilik bisnis meng
 
 | ID | Tujuan | Ukuran keberhasilan | Status ukuran |
 |---|---|---|---|
-| BG-01 | Mendapatkan pelanggan berlangganan | **5 tenant berbayar** | Target dari pemilik produk. Jangka waktu **TBD** (asumsi: 3–6 bulan setelah pilot). |
+| BG-01 | Mendapatkan pelanggan berlangganan | **5 tenant berbayar** | Target dari pemilik produk. Jumlah tenant **tidak dibatasi** (DEC-12); kapasitas ditingkatkan dengan upgrade API key dan penambahan konektor/VPS. Tenggat tidak ditentukan (DEC-18). |
 | BG-02 | Chatbot menjawab akurat dari data bisnis | Akurasi ≥ 90% pada test set | Usulan PRD, belum terukur |
 | BG-03 | Layanan andal | ≥ 99% pesan valid berhasil diproses (kondisi normal) | Usulan PRD, belum terukur |
 | BG-04 | Data tenant aman | 0 insiden akses data lintas tenant | PRD |
@@ -159,8 +159,12 @@ Plan, entitlement, dan status subscription (trialing, active, past_due, suspende
 | Developer API | Tidak | Ditunda |
 | Produk/layanan/FAQ, tes chatbot, analitik dasar | Ya | Ya |
 | Riwayat percakapan | Dasar | Penuh |
+| Harga | **Rp250.000** / periode | **Rp500.000** / periode |
+| Riwayat percakapan yang dapat dilihat | 7 hari terakhir (*asumsi, perlu konfirmasi*) | Seluruh masa simpan (30 hari) |
 
-Harga paket: **TBD**. Fitur "tahap lanjut" tidak boleh dipasarkan seolah sudah tersedia.
+Periode langganan = **30 hari** (*asumsi*; keputusan 2026-10-12 hanya menyebut nominal). Paket Enterprise: harga berdasarkan penawaran, tanpa batas keras (fair use).
+Pembeda paket adalah fitur yang dapat dipakai (DEC-13); entitlement dibaca dari `config/plans.php` oleh satu layanan terpusat.
+Fitur "tahap lanjut" tidak boleh dipasarkan seolah sudah tersedia.
 
 ### FR-005 Knowledge base (M)
 CRUD produk, layanan, FAQ. Stok `NULL` berarti tidak diketahui. Pencarian awal: karena jumlah data UMKM kecil, konteks disusun dari data tenant yang relevan (strategi retrieval final **TBD** setelah uji akurasi). Dokumen (`documents`) di luar MVP kecuali diputuskan lain.
@@ -179,7 +183,7 @@ Tenant menguji pertanyaan di dashboard tanpa mengirim pesan ke pelanggan. Penggu
 ### FR-009 WhatsApp via Baileys (M)
 | Sub-ID | Persyaratan |
 |---|---|
-| FR-009.1 | Konektor Node mengelola banyak socket, satu auth state per channel; creds **dan** Signal keys dipersistenkan |
+| FR-009.1 | Konektor Node mengelola banyak socket, satu auth state per channel; creds **dan** Signal keys dipersistenkan di **MySQL dengan enkripsi** (DEC-17; saat ini masih direktori `auth/` pada PoC) |
 | FR-009.2 | Tenant membuat channel dan memindai QR; QR hanya tampil untuk anggota berwenang dan tidak masuk log |
 | FR-009.3 | Pesan masuk dipetakan ke channel terverifikasi, dideduplikasi, diteruskan ke Laravel |
 | FR-009.4 | Balasan keluar selalu memilih channel milik percakapan, tidak pernah socket global atau berdasarkan nomor penerima |
@@ -194,7 +198,7 @@ Kriteria penerimaan: WA-MT-01 sampai WA-MT-08 (PRD bagian 17.5).
 Ditunda. Spesifikasi PRD bagian FR-008 widget dipertahankan sebagai referensi untuk fase berikutnya.
 
 ### FR-011 Conversation (M)
-Menyimpan channel, tenant, identitas pelanggan yang diperlukan, isi pesan, state pemrosesan dan pengiriman, provider/model, penanda test. Status "AI selesai" dipisahkan dari "terkirim". Retensi data: **TBD**.
+Menyimpan channel, tenant, identitas pelanggan yang diperlukan, isi pesan, state pemrosesan dan pengiriman, provider/model, penanda test. Status "AI selesai" dipisahkan dari "terkirim". Retensi: **30 hari**, lalu dihapus otomatis dari database sistem (DEC-15).
 
 ### FR-012 Usage metering dan kuota (M)
 - Kuota harian, dihitung per tenant untuk semua kanal, berdasarkan zona waktu tenant (default Asia/Jakarta).
@@ -292,6 +296,12 @@ Dicatat di RTM bagian Hutang Teknis. Yang **harus** selesai sebelum ada pengguna
 | DEC-09 | 2026-10-11 | Penomoran FR mengikuti PRD 4.1 (FR-001–016) | PRD bagian 6 |
 | DEC-10 | 2026-10-11 | Dashboard tenant di `/app` pada domain yang sama | – (default, boleh diubah) |
 | DEC-11 | 2026-10-12 | Registrasi publik terbuka; akses fitur ditentukan status langganan workspace (trialing/active dan periode belum lewat), bukan persetujuan admin per akun. Tanpa langganan: dashboard + halaman langganan saja. Aktivasi tetap manual setelah pembayaran dicatat (DEC-07) | Menutup OQ-04 (sebelumnya: invite-only direkomendasikan) |
+| DEC-12 | 2026-10-12 | Jumlah tenant **tidak dibatasi**; bila kapasitas API tidak cukup, upgrade API key. (Catatan: kapasitas sesi WhatsApp per VPS juga terbatas RAM — NFR-007 — sehingga skala besar berarti menambah konektor/VPS, bukan hanya API key.) | Menutup OQ-01 |
+| DEC-13 | 2026-10-12 | Harga: Small **Rp250.000**, Medium **Rp500.000** (per periode 30 hari — *asumsi*). Pembeda paket = fitur yang dapat digunakan (kuota pesan AI, riwayat percakapan; widget/API ditunda). | Menutup OQ-02, OQ-03 |
+| DEC-15 | 2026-10-12 | Percakapan dihapus dari database sistem **30 hari** setelah dibuat (otomatis, terjadwal). Cadangan (backup) harus berumur ≤ 30 hari agar penghapusan efektif. | Menutup OQ-05 |
+| DEC-16 | 2026-10-12 | Notifikasi kepada pemilik ditampilkan **di dashboard tenant** (bot gagal menjawab, kuota habis, kanal terputus, bot belum aktif, langganan berakhir). Email tidak termasuk. | Menutup OQ-06 |
+| DEC-17 | 2026-10-12 | Auth state Baileys disimpan di **MySQL terenkripsi** (enkripsi aplikasi AES-256-GCM, kunci di luar database), bukan direktori file. | Menutup OQ-07 |
+| DEC-18 | 2026-10-12 | Tenggat proyek **tidak ditentukan**. | Menutup OQ-08 |
 
 ---
 
@@ -299,13 +309,13 @@ Dicatat di RTM bagian Hutang Teknis. Yang **harus** selesai sebelum ada pengguna
 
 | ID | Pertanyaan | Dibutuhkan sebelum |
 |---|---|---|
-| OQ-01 | Jangka waktu target 5 tenant berbayar (asumsi 3–6 bulan setelah pilot) | Finalisasi BG-01 |
-| OQ-02 | Harga paket Small dan Medium | Tahap 4 (setelah biaya per pesan terukur) |
-| OQ-03 | Pembeda paket Medium tanpa widget (selain kuota 1.000, riwayat penuh) | Pemasaran paket |
+| OQ-01 | ~~Jangka waktu target 5 tenant berbayar~~ — **Diputuskan DEC-12** (tenant tidak dibatasi) | – |
+| OQ-02 | ~~Harga paket~~ — **Diputuskan DEC-13** (Small Rp250.000, Medium Rp500.000). Perlu konfirmasi: periode 30 hari; harga Enterprise | – |
+| OQ-03 | ~~Pembeda paket~~ — **Diputuskan DEC-13** (fitur yang dapat digunakan). Perlu konfirmasi: "riwayat dasar" = 7 hari | – |
 | OQ-04 | ~~Registrasi publik atau invite-only~~ — **Diputuskan DEC-11** (publik + gerbang langganan) | – |
-| OQ-05 | Retensi percakapan dan prosedur penghapusan data. **Sementara:** `messages` disimpan tanpa batas waktu; belum ada penghapusan | Pilot dengan pelanggan nyata |
-| OQ-06 | Notifikasi ke pemilik saat bot gagal menjawab / kuota habis (usulan minimal pengganti human handover). **Sementara:** pesan yang gagal/terlewat hanya tercatat (status `failed`/`quota_exceeded`/`skipped`); pelanggan menerima `fallback_message` bila AI gagal, dan TIDAK menerima apa pun saat kuota habis | Tahap 3 |
-| OQ-07 | Penyimpanan auth Baileys produksi: direktori persisten vs MySQL terenkripsi | Akhir Tahap 0 |
-| OQ-08 | Deadline dan alur deploy (manual atau CI) | Perencanaan Tahap 1 |
+| OQ-05 | ~~Retensi percakapan~~ — **Diputuskan DEC-15** (30 hari, dihapus otomatis) | – |
+| OQ-06 | ~~Notifikasi ke pemilik~~ — **Diputuskan DEC-16** (notifikasi di dashboard tenant) | – |
+| OQ-07 | ~~Penyimpanan auth Baileys produksi~~ — **Diputuskan DEC-17** (MySQL terenkripsi) | – |
+| OQ-08 | ~~Deadline dan alur deploy~~ — **Diputuskan DEC-18** (tanpa tenggat) | – |
 | OQ-09 | Strategi retrieval knowledge base (konteks penuh vs pencarian) | Tahap 2 — **sementara: konteks penuh ber-batas (AI_CONTEXT_MAX_CHARS); finalisasi setelah uji akurasi 2.6** |
-| OQ-10 | Ketentuan pemrosesan data pada akun Gemini/Groq berbayar yang dipakai | Sebelum pilot |
+| OQ-10 | Ketentuan pemrosesan data pada akun Gemini/Groq: **dijelaskan** di `docs/DATA-PROCESSING.md`; tindakan yang harus dilakukan pemilik sebelum pilot tercantum di sana | Sebelum pilot |

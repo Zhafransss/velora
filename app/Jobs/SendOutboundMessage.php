@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Message;
 use App\Models\Tenant;
+use App\Services\Notifications\TenantNotifier;
 use App\Services\Whatsapp\ChannelSendException;
 use App\Services\Whatsapp\WhatsAppChannelAdapter;
 use App\Support\Tenancy\CurrentTenant;
@@ -153,6 +154,11 @@ class SendOutboundMessage implements ShouldQueue
     private function markFailed(Message $message, string $reason): void
     {
         $message->update(['status' => Message::FAILED, 'error_type' => $reason]);
+
+        // Pemilik perlu tahu bahwa balasan tidak sampai ke pelanggan (DEC-16). 'not_a_reply' adalah cacat internal.
+        if ($reason !== 'not_a_reply' && ($tenant = Tenant::find($this->tenantId))) {
+            app(TenantNotifier::class)->sendFailed($tenant, $reason);
+        }
     }
 
     public function failed(Throwable $e): void
