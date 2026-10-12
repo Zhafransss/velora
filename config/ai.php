@@ -15,6 +15,12 @@ return [
     // Rendah agar jawaban faktual/konsisten (bot tidak boleh mengarang).
     'temperature' => (float) env('AI_TEMPERATURE', 0.3),
 
+    // Penyusun prompt (FR-007). Strategi OQ-09: seluruh data aktif tenant dikirim sebagai konteks,
+    // dibatasi karakter agar biaya terkendali; bila melebihi, sebagian dipotong dan ditandai.
+    'context_max_chars' => (int) env('AI_CONTEXT_MAX_CHARS', 24000),
+    'history_messages' => (int) env('AI_HISTORY_MESSAGES', 10),
+    'customer_message_max_chars' => (int) env('AI_CUSTOMER_MESSAGE_MAX_CHARS', 1000),
+
     // Percobaan ulang per provider untuk galat sementara (timeout, 429, 5xx, respons tidak valid).
     'retries' => (int) env('AI_RETRIES', 1),
     'retry_delay_ms' => (int) env('AI_RETRY_DELAY_MS', 400),

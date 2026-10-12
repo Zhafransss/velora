@@ -16,6 +16,11 @@ class TenancyException extends RuntimeException
         return new self("Refusing to write {$model} for a tenant other than the current tenant.");
     }
 
+    public static function contextMismatch(string $model): self
+    {
+        return new self("Current tenant context does not match the tenant of {$model}.");
+    }
+
     public static function tenantIdImmutable(string $model): self
     {
         return new self("tenant_id of {$model} cannot be changed after creation.");

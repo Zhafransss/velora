@@ -306,5 +306,5 @@ Dicatat di RTM bagian Hutang Teknis. Yang **harus** selesai sebelum ada pengguna
 | OQ-06 | Notifikasi ke pemilik saat bot gagal menjawab (usulan minimal pengganti human handover) | Tahap 3 |
 | OQ-07 | Penyimpanan auth Baileys produksi: direktori persisten vs MySQL terenkripsi | Akhir Tahap 0 |
 | OQ-08 | Deadline dan alur deploy (manual atau CI) | Perencanaan Tahap 1 |
-| OQ-09 | Strategi retrieval knowledge base (konteks penuh vs pencarian) | Tahap 2 |
+| OQ-09 | Strategi retrieval knowledge base (konteks penuh vs pencarian) | Tahap 2 — **sementara: konteks penuh ber-batas (AI_CONTEXT_MAX_CHARS); finalisasi setelah uji akurasi 2.6** |
 | OQ-10 | Ketentuan pemrosesan data pada akun Gemini/Groq berbayar yang dipakai | Sebelum pilot |

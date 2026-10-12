@@ -17,6 +17,8 @@ class AppServiceProvider extends ServiceProvider
         // Scoped: instance baru per request/job agar konteks tenant tidak bocor antar eksekusi.
         $this->app->scoped(\App\Support\Tenancy\CurrentTenant::class);
 
+        $this->app->bind(\App\Services\Ai\PromptBuilder::class, fn () => \App\Services\Ai\PromptBuilder::fromConfig());
+
         $this->app->bind(\App\Services\Ai\AiGateway::class, function () {
             $cfg = config('ai');
             $classes = ['gemini' => \App\Services\Ai\GeminiProvider::class, 'groq' => \App\Services\Ai\GroqProvider::class];
