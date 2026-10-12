@@ -95,3 +95,16 @@ Jalankan worker dengan `php artisan queue:work --tries=1 --sleep=1` agar job dia
 ## Setelah selesai
 Catat hasil tiap skenario (lulus/gagal + log singkat **tanpa token/secret/QR**) lalu kirim ke sesi Claude untuk memperbarui RTM
 (FR-009.x, WA-MT-01..07). Untuk membersihkan: menu WhatsApp › **Putuskan**, lalu hapus folder `connector/auth/`.
+
+## Hasil uji manual tercatat
+| Tanggal | Skenario | Hasil | Bukti |
+|---|---|---|---|
+| 2026-10-12 | Daftar akun, email verifikasi nyata dari `team@veloradigitalworks.com` (Hostinger SMTP), verifikasi | Lulus | Email masuk Kotak Masuk Gmail; akun terverifikasi |
+| 2026-10-12 | Buat kanal, Hubungkan, scan QR dari dashboard | Lulus | Status kanal `connected`, nomor tertaut tercatat |
+| 2026-10-12 | WA-MT-02/03: pesan masuk dipetakan ke kanal yang benar, balasan lewat kanal asal (1 nomor) | Lulus | Percakapan dan pesan tersimpan; balasan `sent` |
+| 2026-10-12 | Pesan "halo" dan pertanyaan produk nonaktif | Lulus | Bot menyapa; untuk menu nonaktif Rp99.000 bot mengaku belum punya informasi (tidak membocorkan harga) |
+| 2026-10-12 | WA-MT-01: restart konektor | Lulus (1 nomor) | Sesi pulih tanpa scan ulang |
+| 2026-10-12 | Antrean tidak berjalan | Gagal dipahami lalu terdiagnosis | Pesan menggantung `received`; setelah `queue:work` jalan semua terproses |
+| 2026-10-12 | Indikator "mengetik" | Endpoint terbukti (200); **tampilan di ponsel belum dikonfirmasi** | - |
+| Belum diuji | 3 nomor paralel (WA-MT-01..04 lengkap), gangguan satu sesi, revoke/logout penuh (WA-MT-07), kapasitas memori (NFR-007) | - | Butuh nomor tambahan; angka kapasitas harus diukur di VPS |
+
