@@ -1,13 +1,11 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import pino from 'pino';
 import makeWASocket, {
   Browsers,
   DisconnectReason,
   fetchLatestBaileysVersion,
   makeCacheableSignalKeyStore,
-  useMultiFileAuthState,
 } from '@whiskeysockets/baileys';
+import { createAuthStore } from './auth/store.js';
 
 const CHANNEL_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 const PHONE_PATTERN = /^\d{8,15}$/;
@@ -47,16 +45,19 @@ export class SessionManager {
   #config;
   #logger;
   #webhook;
+  #authStore;
   #baileysLogger;
   #sessions = new Map();
   #version;
   #versionAt = 0;
   #shuttingDown = false;
 
-  constructor({ config, logger, webhook }) {
+  constructor({ config, logger, webhook, authStore }) {
     this.#config = config;
     this.#logger = logger;
     this.#webhook = webhook;
+    // Gagal cepat saat boot bila konfigurasi penyimpanan auth tidak valid.
+    this.#authStore = authStore ?? createAuthStore({ config, logger });
     // Baileys is verbose and can log sensitive protocol data; keep it quiet.
     this.#baileysLogger = pino({ level: config.logLevel === 'debug' ? 'debug' : 'warn' });
   }
@@ -67,17 +68,10 @@ export class SessionManager {
 
   /** Re-open every session that has saved credentials (survives restarts). */
   async restoreAll() {
-    await fs.mkdir(this.#config.authDir, { recursive: true });
-    const entries = await fs.readdir(this.#config.authDir, { withFileTypes: true });
+    for (const channelId of await this.#authStore.listPaired()) {
+      if (!SessionManager.isValidChannelId(channelId)) continue;
 
-    for (const entry of entries) {
-      if (!entry.isDirectory() || !SessionManager.isValidChannelId(entry.name)) continue;
-      try {
-        await fs.access(path.join(this.#config.authDir, entry.name, 'creds.json'));
-      } catch {
-        continue; // never paired, nothing to restore
-      }
-      await this.start(entry.name);
+      await this.start(channelId);
       await sleep(1000); // stagger to avoid a connection burst on boot
     }
   }
@@ -106,7 +100,7 @@ export class SessionManager {
     const session = this.#sessions.get(channelId);
 
     if (!session) {
-      if (logout) await this.#removeAuthDir(channelId);
+      if (logout) await this.#removeAuth(channelId);
       return { channelId, state: 'stopped' };
     }
 
@@ -126,7 +120,7 @@ export class SessionManager {
     session.qr = null;
 
     if (logout) {
-      await this.#removeAuthDir(channelId);
+      await this.#removeAuth(channelId);
       this.#sessions.delete(channelId);
     }
     await this.#emitStatus(session);
@@ -199,6 +193,8 @@ export class SessionManager {
       clearTimeout(session.reconnectTimer);
       this.#closeSocket(session);
     }
+
+    await this.#authStore.close().catch(() => {});
   }
 
   // ---------------------------------------------------------------- internals
@@ -243,16 +239,9 @@ export class SessionManager {
     };
   }
 
-  #authPath(channelId) {
-    const resolved = path.resolve(this.#config.authDir, channelId);
-    if (!resolved.startsWith(this.#config.authDir + path.sep)) {
-      throw new ChannelError('INVALID_CHANNEL_ID', 'Invalid channel path.', 422);
-    }
-    return resolved;
-  }
-
-  async #removeAuthDir(channelId) {
-    await fs.rm(this.#authPath(channelId), { recursive: true, force: true });
+  /** Hapus SEMUA kredensial channel dari penyimpanan auth (logout/revoke). */
+  async #removeAuth(channelId) {
+    await this.#authStore.remove(channelId);
   }
 
   async #getVersion() {
@@ -286,11 +275,8 @@ export class SessionManager {
 
   async #connect(session) {
     const { channelId } = session;
-    const authPath = this.#authPath(channelId);
-    await fs.mkdir(authPath, { recursive: true });
-
-    // Persists creds AND Signal keys; per-channel directory (PRD 17.4).
-    const { state, saveCreds } = await useMultiFileAuthState(authPath);
+    // Creds DAN Signal keys per channel (PRD 17.4), terenkripsi di MySQL pada produksi (DEC-17).
+    const { state, saveCreds } = await this.#authStore.open(channelId);
     const version = await this.#getVersion();
 
     const sock = makeWASocket({
@@ -371,7 +357,7 @@ export class SessionManager {
       // The user unlinked the device: credentials are now useless.
       session.state = 'logged_out';
       session.registered = false;
-      await this.#removeAuthDir(channelId);
+      await this.#removeAuth(channelId);
       this.#logger.warn({ channelId }, 'channel logged out, credentials removed');
       await this.#emitStatus(session);
       return;

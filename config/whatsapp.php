@@ -29,6 +29,18 @@ return [
     // Jumlah pesan terakhir yang dibawa sebagai konteks percakapan.
     'history_messages' => (int) env('WHATSAPP_HISTORY_MESSAGES', 10),
 
+    // Penyapu pesan menggantung (messages:sweep-stuck, tiap 5 menit).
+    //  - requeue_after: pesan yang belum diambil worker (received/pending) lebih lama dari ini diantrekan ulang.
+    //  - stuck_after:   pesan yang sedang dipegang (processing/sending) lebih lama dari ini dianggap macet.
+    //  - expire_after:  pesan yang masih belum terproses selama ini dinyatakan kedaluwarsa (membalas berjam-jam kemudian
+    //                   lebih merugikan daripada tidak membalas).
+    'sweep' => [
+        'requeue_after_minutes' => (int) env('SWEEP_REQUEUE_AFTER_MINUTES', 5),
+        'stuck_after_minutes' => (int) env('SWEEP_STUCK_AFTER_MINUTES', 10),
+        'expire_after_minutes' => (int) env('SWEEP_EXPIRE_AFTER_MINUTES', 60),
+        'batch' => 200,
+    ],
+
     // Percobaan kirim sebelum dinyatakan gagal.
     'send_max_attempts' => (int) env('WHATSAPP_SEND_MAX_ATTEMPTS', 4),
 ];

@@ -21,6 +21,27 @@ cp .env.example .env
 node --env-file=.env src/index.js
 ```
 
+## Penyimpanan auth terenkripsi (produksi, DEC-17)
+
+`AUTH_STORE=mysql` menyimpan kredensial perangkat dan kunci Signal di MySQL, terenkripsi AES-256-GCM per record
+(IV acak; AAD = channel+jenis+id, sehingga baris yang ditukar/disalin tidak bisa dibaca). Laravel tidak pernah membaca isinya.
+
+1. Jalankan migrasi Laravel (membuat `wa_auth_creds`, `wa_auth_keys`).
+2. Buat pengguna MySQL khusus konektor, hak hanya pada dua tabel itu:
+   ```sql
+   CREATE USER 'velora_connector'@'127.0.0.1' IDENTIFIED BY '<password kuat>';
+   GRANT SELECT, INSERT, UPDATE, DELETE ON veloradigital.wa_auth_creds TO 'velora_connector'@'127.0.0.1';
+   GRANT SELECT, INSERT, UPDATE, DELETE ON veloradigital.wa_auth_keys  TO 'velora_connector'@'127.0.0.1';
+   ```
+3. `npm run keygen` → isi `AUTH_ENCRYPTION_KEYS`, plus `AUTH_STORE=mysql`, `DB_*` di `connector/.env`.
+4. **Cadangkan kunci terpisah dari backup DB.** Kunci hilang = semua sesi hilang (scan ulang). Backup DB saja tidak cukup untuk memulihkan sesi.
+5. Rotasi kunci: buat kunci baru dan taruh di DEPAN (`k2:...,k1:...`), restart; record lama tetap terbaca dan ditulis ulang
+   dengan kunci baru saat berubah. Hapus kunci lama hanya setelah semua record memakai kunci baru (`enc_key_id` di tabel).
+6. Sesi lama di folder `auth/` TIDAK dimigrasi: setelah pindah ke `mysql`, tiap nomor perlu scan QR ulang.
+
+Tes: `npm test` (unit, tanpa DB). Dengan MySQL sungguhan:
+`TEST_DB_DATABASE=<db> TEST_DB_USERNAME=<user> npm test` (membuat/menghapus baris `itest_*` saja; jangan arahkan ke DB produksi).
+
 Produksi di VPS: lihat `deploy/velora-connector.service` (systemd, batas memori, auto-restart).
 
 ## Pairing satu nomor
