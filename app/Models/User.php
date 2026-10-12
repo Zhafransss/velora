@@ -7,6 +7,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable implements FilamentUser
@@ -49,6 +50,11 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
             'is_platform_admin' => 'boolean',
         ];
+    }
+
+    public function tenants(): BelongsToMany
+    {
+        return $this->belongsToMany(Tenant::class, 'tenant_members')->withPivot('role')->withTimestamps();
     }
 
     /** Hanya admin platform Velora yang boleh masuk panel Filament (/admin). */
