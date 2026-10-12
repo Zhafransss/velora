@@ -4,6 +4,7 @@ use App\Http\Controllers\Tenant\Auth\EmailVerificationController;
 use App\Http\Controllers\Tenant\Auth\LoginController;
 use App\Http\Controllers\Tenant\Auth\PasswordResetController;
 use App\Http\Controllers\Tenant\Auth\RegisterController;
+use App\Livewire\Tenant\BotSettingsForm;
 use App\Livewire\Tenant\BusinessProfileForm;
 use App\Livewire\Tenant\Catalog\FaqsManager;
 use App\Livewire\Tenant\Catalog\ProductsManager;
@@ -44,6 +45,9 @@ Route::middleware(['auth', 'verified', 'tenant'])->prefix('app')->name('app.')->
     // Fitur di bawah ini terkunci sampai workspace punya langganan aktif.
     Route::middleware('subscribed')->group(function () {
         Route::get('/business-profile', BusinessProfileForm::class)->name('business-profile');
+
+        // Konfigurasi AI (FR-006)
+        Route::get('/bot', BotSettingsForm::class)->name('bot');
 
         // Knowledge base (FR-005)
         Route::get('/products', ProductsManager::class)->name('products');
