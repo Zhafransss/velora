@@ -1,0 +1,20 @@
+{
+  "name": "velora-connector",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Velora WhatsApp connector (Baileys, multi-session). PoC for Tahap 0.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "pair": "node scripts/pair.js",
+    "smoke": "node scripts/smoke.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "7.0.0-rc14",
+    "pino": "^9.5.0",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
