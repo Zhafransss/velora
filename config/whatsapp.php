@@ -23,6 +23,9 @@ return [
     // Batas laju kirim per kanal per menit (FR-009.7); kelebihannya ditunda, bukan dibuang.
     'max_sends_per_minute' => (int) env('WHATSAPP_MAX_SENDS_PER_MINUTE', 20),
 
+    // Tampilkan "sedang mengetik" ke pelanggan segera setelah pesannya diterima dan selama AI bekerja.
+    'typing_indicator' => (bool) env('WHATSAPP_TYPING_INDICATOR', true),
+
     // Jumlah pesan terakhir yang dibawa sebagai konteks percakapan.
     'history_messages' => (int) env('WHATSAPP_HISTORY_MESSAGES', 10),
 

@@ -41,6 +41,20 @@ class BaileysConnectorAdapter implements WhatsAppChannelAdapter
         throw $this->sendError($response);
     }
 
+    public function typing(Channel $channel, string $to): void
+    {
+        try {
+            // Timeout pendek: indikator tidak boleh menunda pemrosesan pesan.
+            $response = $this->http(4)->post("/channels/{$channel->public_id}/presence", ['to' => $to, 'state' => 'composing']);
+        } catch (ConnectionException) {
+            throw new ChannelSendException(ChannelSendException::UNREACHABLE, true);
+        }
+
+        if (! $response->successful()) {
+            throw $this->sendError($response);
+        }
+    }
+
     public function start(Channel $channel): array
     {
         return $this->call('post', "/channels/{$channel->public_id}/start");

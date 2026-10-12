@@ -72,6 +72,14 @@ Pastikan MySQL XAMPP hidup. Setelah mengubah kode PHP, restart terminal 2 (`queu
 | 9 | Restart konektor (Ctrl+C lalu jalankan lagi) | Sesi pulih tanpa scan ulang (WA-MT-01) |
 | 10 | Turunkan kuota: `AI`/plan `small` = 100/hari; untuk uji cepat ubah `config/plans.php` sementara menjadi 2 | Pesan ke-3 tidak dijawab: "kuota AI harian habis" |
 
+## Kecepatan balasan & indikator "mengetik"
+Waktu dari pesan masuk sampai balasan terkirim ≈ antrean (≤1 dtk dengan `--sleep=1`) + AI (3–5 dtk) + jeda kirim konektor (mitigasi blokir).
+Pelanggan melihat **"sedang mengetik…"** sejak pesannya diterima (hanya bila bot pasti akan membalas) sampai balasan terkirim; WhatsApp
+hanya menampilkan indikator ±10 dtk, jadi konektor memperbaruinya tiap 8 dtk (maks. 60 dtk). Mematikan: `WHATSAPP_TYPING_INDICATOR=false`.
+Jeda kirim dapat diatur di `connector/.env` (`SEND_DELAY_MIN_MS`, `SEND_DELAY_MAX_MS`, `SEND_MIN_GAP_MS`); makin kecil makin cepat, tetapi
+makin mirip bot (risiko blokir naik, SRS R-01). Jeda "mengetik" otomatis dipotong sebesar waktu indikator yang sudah terlihat selama AI bekerja.
+Jalankan worker dengan `php artisan queue:work --tries=1 --sleep=1` agar job diambil cepat.
+
 ## Kalau ada yang tidak jalan
 | Gejala | Penyebab umum | Cara cek |
 |---|---|---|

@@ -364,6 +364,35 @@ describe('BaileysConnectorAdapter', function () {
         expect(fn () => waAdapter()->send($ch, 'x@s.whatsapp.net', 't'))->toThrow(fn (SendEx $e) => $e->type === 'send_timeout_unknown' && ! $e->retryable);
     });
 
+    it('requests the typing indicator for the customer through the channel', function () {
+        [, , $ch] = waChannel();
+        Http::fake(['connector.test/*' => Http::response(['channelId' => $ch->public_id, 'state' => 'composing', 'to' => '6281@s.whatsapp.net'])]);
+
+        waAdapter()->typing($ch, '6281@s.whatsapp.net');
+
+        Http::assertSent(fn ($r) => $r->url() === "http://connector.test/channels/{$ch->public_id}/presence" && $r->method() === 'POST'
+            && $r->hasHeader('Authorization', 'Bearer conn-token-123') && $r->data() === ['to' => '6281@s.whatsapp.net', 'state' => 'composing']);
+    });
+
+    it('reports typing failures as normalized errors without leaking the token', function (int $status, string $type) {
+        [, , $ch] = waChannel();
+        Http::fake(['connector.test/*' => Http::response(['error' => ['message' => 'conn-token-123']], $status)]);
+
+        try {
+            waAdapter()->typing($ch, '6281@s.whatsapp.net');
+            $this->fail('Expected exception');
+        } catch (SendEx $e) {
+            expect($e->type)->toBe($type)->and($e->getMessage())->not->toContain('conn-token');
+        }
+    })->with([[409, 'channel_not_connected'], [404, 'channel_not_found'], [422, 'invalid_message'], [401, 'connector_unauthorized']]);
+
+    it('maps a connection failure while requesting typing to unreachable', function () {
+        [, , $ch] = waChannel();
+        Http::fake(fn () => throw new ConnectionException('cURL error 7: refused'));
+
+        expect(fn () => waAdapter()->typing($ch, 'x@s.whatsapp.net'))->toThrow(fn (SendEx $e) => $e->type === 'connector_unreachable');
+    });
+
     it('manages the session through the internal API', function () {
         [, , $ch] = waChannel();
         Http::fake([

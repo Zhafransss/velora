@@ -13,6 +13,14 @@ interface WhatsAppChannelAdapter
     /** @throws ChannelSendException */
     public function send(Channel $channel, string $to, string $text): SendResult;
 
+    /**
+     * Tampilkan indikator "sedang mengetik" kepada pelanggan (UX selama AI menyusun jawaban). Best effort: pemanggil
+     * tidak boleh gagal karena ini. Indikator berhenti sendiri saat balasan terkirim atau setelah batas waktu.
+     *
+     * @throws ChannelSendException
+     */
+    public function typing(Channel $channel, string $to): void;
+
     /** Buat/pulihkan session (idempoten). @return array<string, mixed> */
     public function start(Channel $channel): array;
 

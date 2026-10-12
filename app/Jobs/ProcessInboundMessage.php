@@ -8,6 +8,7 @@ use App\Services\Ai\AiGateway;
 use App\Services\Ai\AiGatewayException;
 use App\Services\Ai\PromptBuilder;
 use App\Services\Usage\QuotaManager;
+use App\Services\Whatsapp\WhatsAppChannelAdapter;
 use App\Support\Tenancy\CurrentTenant;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,6 +16,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Throwable;
 
@@ -83,6 +85,10 @@ class ProcessInboundMessage implements ShouldQueue
             return null;
         }
 
+        // Pelanggan tahu pesannya sedang dibalas selama AI bekerja. Hanya setelah gerbang dan kuota lolos
+        // (kita pasti akan membalas), dan tidak pernah menggagalkan job.
+        $this->showTyping($channel, $message->conversation->customer_external_id);
+
         try {
             $built = $builder->build($bot, $message->body, $this->history($message));
             $answer = $gateway->generate($built->request, 'chat');
@@ -99,6 +105,20 @@ class ProcessInboundMessage implements ShouldQueue
         }
 
         return $this->finish($message, Message::ANSWERED, null, $answer->text, Message::SOURCE_AI, $answer);
+    }
+
+    private function showTyping($channel, string $customerJid): void
+    {
+        if (! config('whatsapp.typing_indicator') || ! $channel->isConnected()) {
+            return;
+        }
+
+        try {
+            app(WhatsAppChannelAdapter::class)->typing($channel, $customerJid);
+        } catch (Throwable $e) {
+            // Best effort: indikator hanya kenyamanan, bukan bagian dari jaminan pengiriman.
+            Log::debug('whatsapp.typing.failed', ['error' => $e::class]);
+        }
     }
 
     private function skipReason(Tenant $tenant, $channel, $bot): ?string

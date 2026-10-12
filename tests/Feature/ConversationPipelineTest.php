@@ -57,12 +57,17 @@ function plSendOk(): Closure
 }
 
 /** Ganti seluruh stub HTTP. $connector bisa response tunggal atau Http::sequence(). */
-function plHttp($gemini = null, $connector = null): void
+function plHttp($gemini = null, $connector = null, $presence = null): void
 {
     Http::swap(new HttpFactory());
     Http::fake([
         'gemini.test/*' => $gemini ?? Http::response(plGemini()),
-        'connector.test/*' => $connector ?? plSendOk(),
+        // Indikator mengetik dipisah dari pengiriman agar Http::sequence() pengiriman tidak ikut terpakai olehnya.
+        'connector.test/channels/*/presence' => $presence ?? Http::response(['channelId' => 'x', 'state' => 'composing', 'to' => 'x']),
+        // Dibatasi ke /send: Http::fake mengevaluasi SEMUA stub yang cocok, jadi stub berurutan (sequence) yang
+        // lebih luas akan ikut "termakan" oleh request presence.
+        'connector.test/channels/*/send' => $connector ?? plSendOk(),
+        'connector.test/*' => Http::response(['ok' => true]),
     ]);
 }
 
@@ -114,6 +119,22 @@ function plMsgs(Tenant $t, string $direction): \Illuminate\Support\Collection
 function plAiCalls(): int
 {
     return collect(Http::recorded())->filter(fn ($p) => str_contains($p[0]->url(), 'gemini.test'))->count();
+}
+
+function plPresence(): \Illuminate\Support\Collection
+{
+    return collect(Http::recorded())->map(fn ($p) => $p[0])->filter(fn ($r) => str_ends_with($r->url(), '/presence'))->values();
+}
+
+/** Urutan semua panggilan HTTP keluar: "gemini" | "presence" | "send". */
+function plOrder(): array
+{
+    return collect(Http::recorded())->map(fn ($p) => $p[0]->url())->map(fn ($u) => match (true) {
+        str_contains($u, 'gemini.test') => 'gemini',
+        str_ends_with($u, '/presence') => 'presence',
+        str_ends_with($u, '/send') => 'send',
+        default => 'lain',
+    })->values()->all();
 }
 
 function plSends(): \Illuminate\Support\Collection
@@ -429,6 +450,100 @@ describe('outbound delivery', function () {
         expect(plSends())->toHaveCount(2)
             ->and(plIn_($t, fn () => Message::whereKey($ids[2])->value('status')))->toBe('pending');
         Queue::assertPushed(SendOutboundMessage::class, fn ($j) => $j->messageId === $ids[2] && $j->delay > 0);
+    });
+});
+
+// ---- Indikator "sedang mengetik" ----
+describe('typing indicator', function () {
+    it('shows typing to the customer as soon as the reply is certain, before the AI runs and before sending', function () {
+        plHttp();
+        [, , $ch] = plSetup();
+
+        plIn($ch, from: '6281111111111@s.whatsapp.net');
+
+        expect(plOrder())->toBe(['presence', 'gemini', 'send']);
+        $p = plPresence()->sole();
+        expect($p->url())->toBe("http://connector.test/channels/{$ch->public_id}/presence")
+            ->and($p->data())->toBe(['to' => '6281111111111@s.whatsapp.net', 'state' => 'composing'])
+            ->and($p->hasHeader('Authorization', 'Bearer conn-token'))->toBeTrue();
+    });
+
+    it('also types to LID customers', function () {
+        plHttp();
+        [, , $ch] = plSetup();
+
+        plIn($ch, from: '98765432101@lid');
+
+        expect(plPresence()->sole()->data()['to'])->toBe('98765432101@lid');
+    });
+
+    it('does not show typing when no reply will be produced', function (array $setup) {
+        plHttp();
+        [, , $ch] = plSetup($setup);
+
+        plIn($ch);
+
+        expect(plPresence())->toHaveCount(0)->and(plAiCalls())->toBe(0);
+    })->with([
+        'bot draft' => [['bot' => ['status' => 'draft']]],
+        'no subscription' => [['subscribe' => false]],
+        'tenant suspended' => [['tenant' => ['status' => 'suspended']]],
+    ]);
+
+    it('does not show typing when the daily quota is exhausted', function () {
+        config(['plans.small.daily_ai_messages' => 1]);
+        plHttp();
+        [, , $ch] = plSetup();
+
+        plIn($ch, 'satu', 'T1');
+        plIn($ch, 'dua', 'T2'); // melewati batas
+
+        expect(plPresence())->toHaveCount(1); // hanya untuk pesan yang dijawab
+    });
+
+    it('does not call the connector for typing when the channel is not connected', function () {
+        plHttp();
+        [, , $ch] = plSetup(['channel' => ['status' => 'reconnecting']]);
+
+        plIn($ch);
+
+        expect(plPresence())->toHaveCount(0);
+    });
+
+    it('can be switched off', function () {
+        config(['whatsapp.typing_indicator' => false]);
+        plHttp();
+        [$t, , $ch] = plSetup();
+
+        plIn($ch);
+
+        expect(plPresence())->toHaveCount(0)->and(plMsgs($t, 'outbound')->sole()->status)->toBe('sent');
+    });
+
+    it('never breaks the reply when the typing call fails', function (Closure $presence) {
+        plHttp(presence: $presence());
+        [$t, , $ch] = plSetup();
+
+        plIn($ch);
+
+        // (Request yang melempar exception tidak tercatat oleh Http::recorded(), jadi jumlah presence tidak diperiksa di sini.)
+        expect(plMsgs($t, 'inbound')->sole()->status)->toBe('answered')
+            ->and(plMsgs($t, 'outbound')->sole()->status)->toBe('sent')
+            ->and(plSends())->toHaveCount(1)->and(plAiCalls())->toBe(1);
+    })->with([
+        'connector unreachable' => [fn () => fn () => throw new ConnectionException('cURL error 7: refused')],
+        'timeout' => [fn () => fn () => throw new ConnectionException('cURL error 28: timed out')],
+        'not connected (409)' => [fn () => Http::response(['error' => ['code' => 'CHANNEL_NOT_CONNECTED']], 409)],
+        'server error' => [fn () => Http::response('boom', 500)],
+    ]);
+
+    it('shows typing once per customer message, not once per send retry', function () {
+        plHttp(connector: Http::sequence()->push([], 409)->push(['messageId' => 'WAOUT-RETRY']));
+        [$t, , $ch] = plSetup();
+
+        plIn($ch);
+
+        expect(plPresence())->toHaveCount(1)->and(plSends())->toHaveCount(2)->and(plMsgs($t, 'outbound')->sole()->status)->toBe('sent');
     });
 });
 

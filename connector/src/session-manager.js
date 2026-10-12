@@ -11,6 +11,16 @@ import makeWASocket, {
 
 const CHANNEL_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 const PHONE_PATTERN = /^\d{8,15}$/;
+/**
+ * Indikator "mengetik" (UX): WhatsApp hanya menampilkannya ±10 detik tanpa penyegaran, padahal AI bisa butuh
+ * beberapa detik. Selama aktif, `composing` diperbarui tiap TYPING_REFRESH_MS dan otomatis berhenti setelah
+ * TYPING_MAX_MS (batas aman bila Laravel tidak pernah mengirim `paused`).
+ */
+const TYPING_REFRESH_MS = 8_000;
+const TYPING_MAX_MS = 60_000;
+/** Jeda minimum sebelum balasan terkirim walau indikator sudah terlihat lama. */
+const MIN_AFTER_TYPING_MS = 300;
+
 const SEEN_LIMIT = 5000;
 const VERSION_TTL_MS = 60 * 60 * 1000;
 
@@ -216,6 +226,7 @@ export class SessionManager {
       lastSendAt: 0,
       seen: new Set(),
       seenOrder: [],
+      typing: new Map(), // jid -> { timer, startedAt, stopAt }
     };
   }
 
@@ -257,6 +268,9 @@ export class SessionManager {
   }
 
   #closeSocket(session) {
+    for (const entry of session.typing.values()) clearInterval(entry.timer);
+    session.typing.clear();
+
     const sock = session.sock;
     session.sock = null;
     if (!sock) return;
@@ -450,16 +464,88 @@ export class SessionManager {
       throw new ChannelError('CHANNEL_NOT_CONNECTED', `Channel is ${session.state}.`, 409);
     }
 
-    try {
-      await sock.sendPresenceUpdate('composing', jid);
-    } catch {
-      // presence is best-effort
-    }
-    await sleep(randomBetween(delayMinMs, delayMaxMs));
+    // Bila indikator mengetik sudah tampil (mis. selama AI bekerja), jeda "mengetik" dikurangi sebesar waktu itu
+    // supaya pelanggan tidak menunggu dobel; tetap ada jeda minimum agar balasan tidak terasa seketika.
+    const alreadyTypingMs = session.typing.has(jid) ? Date.now() - session.typing.get(jid).startedAt : 0;
+    await this.#startTyping(session, jid);
+    await sleep(Math.max(MIN_AFTER_TYPING_MS, randomBetween(delayMinMs, delayMaxMs) - alreadyTypingMs));
 
-    const sent = await sock.sendMessage(jid, { text });
+    let sent;
+    try {
+      sent = await sock.sendMessage(jid, { text });
+    } finally {
+      await this.#stopTyping(session, jid, true);
+    }
     session.lastSendAt = Date.now();
     return { channelId: session.channelId, messageId: sent?.key?.id ?? null, to: jid };
+  }
+
+  /**
+   * Menampilkan/menghentikan indikator "mengetik" kepada pelanggan. Tidak dipaced dan tidak mengantre di belakang
+   * pengiriman, supaya indikator muncul segera. Best effort: kegagalan presence tidak boleh mengganggu alur utama.
+   */
+  async setPresence(channelId, to, state = 'composing') {
+    this.#assertValidId(channelId);
+    const session = this.#sessions.get(channelId);
+    if (!session) throw new ChannelError('CHANNEL_NOT_FOUND', 'Channel not found.', 404);
+    if (session.state !== 'connected' || !session.sock) {
+      throw new ChannelError('CHANNEL_NOT_CONNECTED', `Channel is ${session.state}.`, 409);
+    }
+    if (state !== 'composing' && state !== 'paused') {
+      throw new ChannelError('INVALID_STATE', 'state must be composing or paused.', 422);
+    }
+    const jid = this.#toJid(to);
+
+    if (state === 'composing') await this.#startTyping(session, jid);
+    else await this.#stopTyping(session, jid, true);
+
+    return { channelId, state, to: jid };
+  }
+
+  async #presence(session, jid, state) {
+    const sock = session.sock;
+    if (!sock) return;
+    try {
+      // presenceSubscribe dibutuhkan agar update presence ke kontak tersebut tampil di sisi mereka.
+      if (state === 'composing') await sock.presenceSubscribe(jid);
+      await sock.sendPresenceUpdate(state, jid);
+    } catch (error) {
+      this.#logger.debug({ channelId: session.channelId, err: error.message }, 'presence update failed (best effort)');
+    }
+  }
+
+  async #startTyping(session, jid) {
+    const stopAt = Date.now() + TYPING_MAX_MS;
+    const existing = session.typing.get(jid);
+    if (existing) {
+      existing.stopAt = stopAt; // sudah berjalan: cukup perpanjang
+      return;
+    }
+
+    const entry = { timer: null, startedAt: Date.now(), stopAt };
+    session.typing.set(jid, entry);
+    await this.#presence(session, jid, 'composing');
+
+    // Dihentikan saat menunggu presence pertama: jangan buat timer yatim.
+    if (session.typing.get(jid) !== entry) return;
+
+    entry.timer = setInterval(() => {
+      if (Date.now() >= entry.stopAt || !session.sock || session.state !== 'connected') {
+        this.#stopTyping(session, jid, false).catch(() => {});
+        return;
+      }
+      this.#presence(session, jid, 'composing').catch(() => {});
+    }, TYPING_REFRESH_MS);
+    entry.timer.unref?.();
+  }
+
+  async #stopTyping(session, jid, sendPaused) {
+    const entry = session.typing.get(jid);
+    if (entry) {
+      clearInterval(entry.timer);
+      session.typing.delete(jid);
+    }
+    if (sendPaused) await this.#presence(session, jid, 'paused');
   }
 
   #toJid(to) {

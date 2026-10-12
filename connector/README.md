@@ -41,6 +41,7 @@ Scan QR lewat WhatsApp > Perangkat tertaut. `channelId` hanya boleh `[A-Za-z0-9_
 | GET | `/channels/:id` | Status session |
 | GET | `/channels/:id/qr` | QR terakhir (hanya di memori, tidak di-log, tidak lewat webhook) |
 | POST | `/channels/:id/send` | `{ "to": "62812...", "text": "..." }` lewat channel itu saja |
+| POST | `/channels/:id/presence` | `{ "to": "...", "state": "composing"\|"paused" }` indikator "mengetik" (diperbarui otomatis tiap 8 dtk, maks. 60 dtk) |
 | DELETE | `/channels/:id[?logout=1]` | Stop; dengan `logout=1` device di-unlink dan kredensial dihapus |
 
 Event ke Laravel (jika `WEBHOOK_URL` diisi) ditandatangani `HMAC-SHA256(secret, "<timestamp>.<body>")` pada header `X-Velora-Signature` dan `X-Velora-Timestamp`. Laravel wajib memverifikasi tanda tangan dan menolak timestamp kedaluwarsa. Jenis event: `message.inbound`, `channel.status`.

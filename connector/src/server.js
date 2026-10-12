@@ -42,6 +42,7 @@ async function readJson(req) {
  *   GET    /channels/:id
  *   GET    /channels/:id/qr
  *   POST   /channels/:id/send            { to, text }
+ *   POST   /channels/:id/presence        { to, state: 'composing' | 'paused' }  (indikator "mengetik")
  *   DELETE /channels/:id                 ?logout=1 to unlink and delete credentials
  */
 export function createServer({ config, manager, logger }) {
@@ -83,6 +84,10 @@ export function createServer({ config, manager, logger }) {
         if (parts.length === 3 && parts[2] === 'send' && req.method === 'POST') {
           const body = await readJson(req);
           return send(res, 200, await manager.sendText(channelId, body.to, body.text));
+        }
+        if (parts.length === 3 && parts[2] === 'presence' && req.method === 'POST') {
+          const body = await readJson(req);
+          return send(res, 200, await manager.setPresence(channelId, body.to, body.state ?? 'composing'));
         }
         if (parts.length === 2 && req.method === 'DELETE') {
           return send(res, 200, await manager.stop(channelId, { logout: url.searchParams.get('logout') === '1' }));
