@@ -208,10 +208,9 @@ describe('products CRUD', function () {
         [$user] = kbTenant();
         $other = foreign(Product::class, ["name" => "Milik B"]);
 
-        $c = Livewire::actingAs($user)->test(ProductsManager::class);
-
+        // Komponen baru per aksi: respons 404 tidak membawa snapshot Livewire yang valid untuk dipakai ulang.
         foreach (['edit', 'toggleActive', 'delete'] as $action) {
-            $c->call($action, $other->id)->assertNotFound();
+            Livewire::actingAs($user)->test(ProductsManager::class)->call($action, $other->id)->assertNotFound();
         }
 
         expect($other->fresh()->name)->toBe('Milik B')->and($other->fresh()->is_active)->toBeTrue();
