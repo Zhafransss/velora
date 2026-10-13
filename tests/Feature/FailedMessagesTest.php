@@ -13,7 +13,6 @@ use App\Models\TenantMember;
 use App\Models\User;
 use App\Services\Usage\QuotaManager;
 use App\Support\Tenancy\CurrentTenant;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -146,7 +145,7 @@ describe('retry outbound', function () {
 
         // Klik kedua (atau tab lain) pada pesan yang sama: tidak ada pengiriman kedua.
         Queue::fake();
-        expect(fn () => fmPage($t, $u)->call('retry', $m->id))->toThrow(ModelNotFoundException::class);
+        fmPage($t, $u)->call('retry', $m->id)->assertNotFound();
         Queue::assertNothingPushed();
     });
 
@@ -193,7 +192,7 @@ describe('retry outbound', function () {
         $old = fmMsg($t, $c, 'outbound', 'failed', 'connector_unreachable', 30);
 
         foreach ([$revoked, $old] as $m) {
-            expect(fn () => fmPage($t, $u)->call('retry', $m->id))->toThrow(ModelNotFoundException::class);
+            fmPage($t, $u)->call('retry', $m->id)->assertNotFound();
         }
         Queue::assertNothingPushed();
     });
@@ -240,7 +239,7 @@ describe('retry inbound', function () {
         $in = fmMsg($t, $c, 'inbound', 'failed', 'rate_limited');
         fmMsg($t, $c, 'outbound', 'sent', null, 1, $in->id);
 
-        expect(fn () => fmPage($t, $u)->call('retry', $in->id))->toThrow(ModelNotFoundException::class);
+        fmPage($t, $u)->call('retry', $in->id)->assertNotFound();
         Queue::assertNothingPushed();
         expect(fmFresh($in)->process_attempts)->toBe(0);
     });
@@ -263,7 +262,7 @@ describe('authorization', function () {
         [$b, , $cb] = fmSetup();
         $theirs = fmMsg($b, $cb, 'outbound', 'failed', 'connector_unreachable');
 
-        expect(fn () => fmPage($a, $ua)->call('retry', $theirs->id))->toThrow(ModelNotFoundException::class);
+        fmPage($a, $ua)->call('retry', $theirs->id)->assertNotFound();
 
         Queue::assertNothingPushed();
         expect(fmFresh($theirs)->status)->toBe('failed');
