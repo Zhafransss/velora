@@ -5,6 +5,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -33,10 +34,20 @@ class UserFactory extends Factory
         ];
     }
 
+    /** Admin platform yang sudah menyiapkan MFA (wajib untuk membuka /admin). */
     public function platformAdmin(): static
     {
         return $this->state(fn (array $attributes) => [
             'is_platform_admin' => true,
+            'app_authentication_secret' => AppAuthentication::make()->generateSecret(),
+        ]);
+    }
+
+    /** Admin platform yang belum menyiapkan MFA. */
+    public function withoutMfa(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'app_authentication_secret' => null,
         ]);
     }
 
