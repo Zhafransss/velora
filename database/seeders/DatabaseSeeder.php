@@ -20,7 +20,8 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        User::factory()->platformAdmin()->create([
+        // Tanpa MFA: secret acak dari factory tidak diketahui siapa pun. Login pertama ke /admin meminta penyiapan MFA.
+        User::factory()->platformAdmin()->withoutMfa()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);

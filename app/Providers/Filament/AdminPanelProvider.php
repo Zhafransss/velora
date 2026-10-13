@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -28,6 +29,13 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            // Panel ini mengendalikan semua workspace dan langganan, dan halaman login-nya publik: password saja tidak
+            // cukup. MFA wajib; admin tanpa MFA diarahkan ke halaman penyiapan sebelum bisa membuka apa pun.
+            // Kode pemulihan untuk ponsel hilang; kelola/regenerasi di halaman profil.
+            ->multiFactorAuthentication([
+                AppAuthentication::make()->brandName('Velora Admin')->recoverable(),
+            ], isRequired: true)
+            ->profile()
             ->colors([
                 'primary' => Color::Amber,
             ])

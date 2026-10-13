@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->redirectUsersTo('/app');
 
+        // Global (bukan grup web) agar panel Filament dan respons Livewire ikut mendapat header keamanan.
+        $middleware->append(\App\Http\Middleware\HardenResponses::class);
+
         // Webhook konektor memakai tanda tangan HMAC, bukan token CSRF.
         $middleware->validateCsrfTokens(except: ['webhooks/*']);
     })
