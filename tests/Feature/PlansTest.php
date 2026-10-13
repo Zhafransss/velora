@@ -16,7 +16,6 @@ use App\Services\Admin\SubscriptionService;
 use App\Services\Plans\Entitlements;
 use App\Support\Tenancy\CurrentTenant;
 use Filament\Facades\Filament;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
 
 function pxTenant(?string $plan = 'small', string $role = 'owner'): array
@@ -227,8 +226,8 @@ describe('conversation history window', function () {
         [$user, $t] = pxTenant('small');
         $old = pxConversation($t, 'Lama', 20);
 
-        expect(fn () => Livewire::actingAs($user)->test(ConversationHistory::class)->call('select', $old->id))->toThrow(ModelNotFoundException::class);
-        expect(fn () => Livewire::withQueryParams(['c' => $old->id])->actingAs($user)->test(ConversationHistory::class))->toThrow(ModelNotFoundException::class);
+        Livewire::actingAs($user)->test(ConversationHistory::class)->call('select', $old->id)->assertNotFound();
+        Livewire::withQueryParams(['c' => $old->id])->actingAs($user)->test(ConversationHistory::class)->assertNotFound();
     });
 
     it('hides messages older than the window inside a visible conversation', function () {

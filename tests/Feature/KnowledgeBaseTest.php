@@ -12,7 +12,6 @@ use App\Models\TenantMember;
 use App\Models\User;
 use App\Support\Tenancy\CurrentTenant;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Livewire\Livewire;
 
@@ -209,10 +208,9 @@ describe('products CRUD', function () {
         [$user] = kbTenant();
         $other = foreign(Product::class, ["name" => "Milik B"]);
 
-        $c = Livewire::actingAs($user)->test(ProductsManager::class);
-
+        // Komponen baru per aksi: respons 404 tidak membawa snapshot Livewire yang valid untuk dipakai ulang.
         foreach (['edit', 'toggleActive', 'delete'] as $action) {
-            expect(fn () => $c->call($action, $other->id))->toThrow(ModelNotFoundException::class);
+            Livewire::actingAs($user)->test(ProductsManager::class)->call($action, $other->id)->assertNotFound();
         }
 
         expect($other->fresh()->name)->toBe('Milik B')->and($other->fresh()->is_active)->toBeTrue();
@@ -222,9 +220,9 @@ describe('products CRUD', function () {
         [$user] = kbTenant();
         $other = foreign(Product::class, ["name" => "Milik B"]);
 
-        expect(fn () => Livewire::actingAs($user)->test(ProductsManager::class)
-            ->set('editingId', $other->id)->set('form.name', 'Diretas')->call('save'))
-            ->toThrow(ModelNotFoundException::class);
+        Livewire::actingAs($user)->test(ProductsManager::class)
+            ->set("editingId", $other->id)->set("form.name", "Diretas")->call("save")
+            ->assertNotFound();
 
         expect($other->fresh()->name)->toBe('Milik B');
     });
@@ -287,8 +285,9 @@ describe('services CRUD', function () {
         [$user] = kbTenant();
         $other = foreign(CatalogService::class);
 
-        expect(fn () => Livewire::actingAs($user)->test(ServicesManager::class)->call('delete', $other->id))
-            ->toThrow(ModelNotFoundException::class);
+        Livewire::actingAs($user)->test(ServicesManager::class)->call('delete', $other->id)->assertNotFound();
+
+        expect($other->fresh())->not->toBeNull();
     });
 });
 
@@ -324,7 +323,6 @@ describe('FAQ CRUD', function () {
         [$user] = kbTenant();
         $other = foreign(Faq::class);
 
-        expect(fn () => Livewire::actingAs($user)->test(FaqsManager::class)->call('edit', $other->id))
-            ->toThrow(ModelNotFoundException::class);
+        Livewire::actingAs($user)->test(FaqsManager::class)->call('edit', $other->id)->assertNotFound();
     });
 });

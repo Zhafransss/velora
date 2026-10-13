@@ -11,7 +11,6 @@ use App\Models\User;
 use App\Services\Notifications\TenantNotifier;
 use App\Support\Tenancy\CurrentTenant;
 use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -397,7 +396,7 @@ describe('inbox page', function () {
         ntAs($a);
 
         Livewire::actingAs($userA)->test(NotificationsInbox::class)->assertSee('Milik A')->assertDontSee('RAHASIA MILIK B');
-        expect(fn () => Livewire::actingAs($userA)->test(NotificationsInbox::class)->call('markRead', $bId))->toThrow(ModelNotFoundException::class);
+        Livewire::actingAs($userA)->test(NotificationsInbox::class)->call('markRead', $bId)->assertNotFound();
         expect(DB::table('tenant_notifications')->where('id', $bId)->value('read_at'))->toBeNull();
     });
 });

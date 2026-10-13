@@ -12,7 +12,6 @@ use App\Models\TenantMember;
 use App\Models\User;
 use App\Services\Whatsapp\QrRenderer;
 use App\Support\Tenancy\CurrentTenant;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Facades\Http;
@@ -384,8 +383,8 @@ describe('conversation history', function () {
 
         Livewire::actingAs($user)->test(ConversationHistory::class)->assertDontSee('PELANGGAN RAHASIA B');
 
-        expect(fn () => Livewire::actingAs($user)->test(ConversationHistory::class)->call('select', $convB->id))->toThrow(ModelNotFoundException::class);
-        expect(fn () => Livewire::withQueryParams(['c' => $convB->id])->actingAs($user)->test(ConversationHistory::class))->toThrow(ModelNotFoundException::class);
+        Livewire::actingAs($user)->test(ConversationHistory::class)->call('select', $convB->id)->assertNotFound();
+        Livewire::withQueryParams(['c' => $convB->id])->actingAs($user)->test(ConversationHistory::class)->assertNotFound();
     });
 });
 
