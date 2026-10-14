@@ -16,6 +16,13 @@ return [
     'default' => env('FILESYSTEM_DISK', 'local'),
 
     /*
+    | Disk gambar konten website (thumbnail artikel, portofolio, layanan) yang diunggah lewat panel admin.
+    | 'public' = storage/app/public (lokal); 'r2' = Cloudflare R2. Lihat docs/DEPLOY-CHECKLIST.md bagian 6.
+    | Pindah ke R2: salin dulu gambar lama (`php artisan media:sync --to=r2`), baru ubah MEDIA_DISK.
+    */
+    'media_disk' => env('MEDIA_DISK', 'public'),
+
+    /*
     |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
@@ -61,6 +68,29 @@ return [
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
             'visibility' => 'public',
             'throw' => false,
+            'report' => false,
+        ],
+
+        // Cloudflare R2 untuk gambar konten website (MEDIA_DISK=r2).
+        'r2' => [
+            'driver' => 's3',
+            'key' => env('R2_ACCESS_KEY_ID'),
+            'secret' => env('R2_SECRET_ACCESS_KEY'),
+            'region' => 'auto',
+            'bucket' => env('R2_BUCKET'),
+            // https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+            'endpoint' => env('R2_ENDPOINT'),
+            // URL publik bucket (domain kustom, mis. https://media.veloradigitalworks.com, atau https://pub-xxx.r2.dev).
+            'url' => env('R2_PUBLIC_URL'),
+            'use_path_style_endpoint' => true,
+            'options' => [
+                // R2 tidak mendukung ACL per objek dan MENOLAK 'public-read' (NotImplemented), sedangkan Laravel/Filament
+                // mengirimnya untuk visibility 'public'. Paksa 'private' (diterima R2); akses publik diatur di level bucket.
+                'ACL' => 'private',
+                // Nama file unik (ULID / -w<lebar>.webp) dan tidak pernah ditimpa, jadi aman di-cache lama.
+                'CacheControl' => 'public, max-age=31536000, immutable',
+            ],
+            'throw' => true,
             'report' => false,
         ],
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Articles\Schemas;
 
+use App\Support\Media;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
@@ -36,7 +37,7 @@ class ArticleInfolist
 
                         ImageEntry::make('thumbnail')
                             ->label('Thumbnail')
-                            ->disk('public')
+                            ->disk(Media::disk())
                             ->visibility('public')
                             ->columnSpanFull(),
 

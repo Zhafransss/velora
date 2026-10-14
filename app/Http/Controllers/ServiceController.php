@@ -16,7 +16,8 @@ class ServiceController extends Controller
     {
         $services = Service::with([
             'category',
-            'cheapestPackage'
+            // Kartu layanan menampilkan fitur paket termurah; tanpa ini 1 query per layanan (N+1).
+            'cheapestPackage.features',
         ])
         ->where('is_active', true)
         ->orderBy('sort_order')

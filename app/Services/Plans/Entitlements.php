@@ -50,13 +50,14 @@ final class Entitlements
         return collect(array_keys(config('plans')))->mapWithKeys(fn ($code) => [$code => self::forPlan($code)])->all();
     }
 
-    /** Langganan layak terbaru, atau null. */
+    /** Langganan layak terbaru, atau null. Memakai relasi yang sudah di-eager-load bila ada (tabel admin, tanpa N+1). */
     public static function currentSubscription(Tenant $tenant): ?Subscription
     {
-        return $tenant->subscriptions()
-            ->whereIn('status', Subscription::ENTITLED_STATUSES)
-            ->latest('id')->get()
-            ->first(fn (Subscription $s) => $s->isEntitled());
+        $candidates = $tenant->relationLoaded('entitledSubscriptions')
+            ? $tenant->entitledSubscriptions
+            : $tenant->entitledSubscriptions()->get();
+
+        return $candidates->first(fn (Subscription $s) => $s->isEntitled());
     }
 
     /** Batas awal (tanggal) riwayat yang boleh dilihat, atau null bila tanpa batas selain masa simpan. */

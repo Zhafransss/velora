@@ -302,6 +302,7 @@ Dicatat di RTM bagian Hutang Teknis. Yang **harus** selesai sebelum ada pengguna
 | DEC-16 | 2026-10-12 | Notifikasi kepada pemilik ditampilkan **di dashboard tenant** (bot gagal menjawab, kuota habis, kanal terputus, bot belum aktif, langganan berakhir). Email tidak termasuk. | Menutup OQ-06 |
 | DEC-17 | 2026-10-12 | Auth state Baileys disimpan di **MySQL terenkripsi** (enkripsi aplikasi AES-256-GCM, kunci di luar database), bukan direktori file. | Menutup OQ-07 |
 | DEC-18 | 2026-10-12 | Tenggat proyek **tidak ditentukan**. | Menutup OQ-08 |
+| DEC-19 | 2026-10-14 | Gambar konten website yang diunggah admin (artikel, portofolio, layanan) disimpan di **Cloudflare R2** (`MEDIA_DISK=r2`), bukan di disk hosting. Alasan: upload di Hostinger tidak otomatis muncul di `public_html/storage`, ukuran halaman (NFR-001), egress gratis. Runbook: `docs/DEPLOY-CHECKLIST.md` bagian 6. | Keputusan pemilik produk |
 
 ---
 

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Portfolios\Schemas;
 
-use Filament\Forms\Components\FileUpload;
+use App\Filament\Forms\OptimizedImageUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -32,11 +32,9 @@ class PortfolioForm
                 ->required()
                 ->unique(ignoreRecord: true),
 
-            FileUpload::make('cover_image')
+            OptimizedImageUpload::make('cover_image')
                 ->label('Cover Image')
-                ->disk('public')
                 ->directory('portfolio_cover')
-                ->visibility('public')
                 ->image()
                 ->required(),
 
@@ -47,11 +45,9 @@ class PortfolioForm
                 ->label('Portfolio Images')
                 ->relationship('images')
                 ->schema([
-                    FileUpload::make('image_path')
+                    OptimizedImageUpload::make('image_path')
                         ->label('Image')
-                        ->disk('public')
                         ->directory('portfolio_images')
-                        ->visibility('public')
                         ->image()
                         ->required(),
 

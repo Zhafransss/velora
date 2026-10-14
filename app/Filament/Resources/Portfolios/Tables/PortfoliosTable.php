@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Portfolios\Tables;
 
+use App\Support\Media;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -18,7 +19,7 @@ class PortfoliosTable
             ->columns([
                 TextColumn::make('title'),
                  ImageColumn::make('cover_image')
-                    ->disk('public')
+                    ->disk(Media::disk())
                     ->visibility('public'),
                     IconColumn::make('is_active')
                     ->boolean()

@@ -1,4 +1,3 @@
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
 <section class="relative bg-white py-12 sm:py-14">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

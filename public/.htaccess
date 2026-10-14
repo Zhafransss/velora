@@ -23,3 +23,27 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# ---- Performa (2026-10-13) ----
+# Aman dipakai di Apache maupun LiteSpeed (Hostinger); tiap blok hanya aktif bila modulnya tersedia.
+
+# Kompresi teks (HTML/CSS/JS/JSON/SVG). LiteSpeed biasanya sudah mengompresi sendiri; blok ini tidak mengganggu.
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml application/javascript text/javascript application/json application/xml image/svg+xml
+</IfModule>
+
+# Cache browser untuk aset statis. Respons HTML Laravel tidak terpengaruh (tetap no-cache).
+# CSS/JS boleh 1 tahun karena semuanya berversi: /build ber-hash (Vite), Filament ?v=, tenant.css ?v=<waktu file>.
+# Gambar 30 hari untuk semua folder (aturan per tipe tidak bisa membedakan /storage dan /images; /images bisa diganti dengan nama sama).
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType text/javascript "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType image/webp "access plus 30 days"
+    ExpiresByType image/png "access plus 30 days"
+    ExpiresByType image/jpeg "access plus 30 days"
+    ExpiresByType image/svg+xml "access plus 30 days"
+    ExpiresByType image/x-icon "access plus 7 days"
+</IfModule>

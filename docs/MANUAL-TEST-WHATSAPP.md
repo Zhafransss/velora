@@ -32,10 +32,12 @@ Registrasi tetap berhasil walau SMTP gagal; halaman verifikasi memberi tahu dan 
 ## Menjalankan (3 terminal wajib + 1 penjadwal)
 ```bash
 # 1. Web (sudah berjalan di port 8000 jika Anda masih membukanya)
+#    Sekali saja: php artisan storage:link  (tanpa ini gambar upload 404)
 php artisan serve
 
 # 2. Antrean — WAJIB. Tanpa ini pesan masuk tersimpan tetapi tidak pernah dijawab.
-php artisan queue:work --tries=1
+#    Sebutkan ketiga antrean: ai (jawaban AI), whatsapp (pengiriman), default (lainnya).
+php artisan queue:work --queue=ai,whatsapp,default --tries=1 --sleep=1
 
 # 3. Konektor WhatsApp
 cd connector
@@ -84,14 +86,14 @@ Pelanggan melihat **"sedang mengetik…"** sejak pesannya diterima (hanya bila b
 hanya menampilkan indikator ±10 dtk, jadi konektor memperbaruinya tiap 8 dtk (maks. 60 dtk). Mematikan: `WHATSAPP_TYPING_INDICATOR=false`.
 Jeda kirim dapat diatur di `connector/.env` (`SEND_DELAY_MIN_MS`, `SEND_DELAY_MAX_MS`, `SEND_MIN_GAP_MS`); makin kecil makin cepat, tetapi
 makin mirip bot (risiko blokir naik, SRS R-01). Jeda "mengetik" otomatis dipotong sebesar waktu indikator yang sudah terlihat selama AI bekerja.
-Jalankan worker dengan `php artisan queue:work --tries=1 --sleep=1` agar job diambil cepat.
+Jalankan worker dengan `php artisan queue:work --queue=ai,whatsapp,default --tries=1 --sleep=1` agar job diambil cepat. Di produksi tiap antrean punya worker sendiri (lihat `deploy/supervisor/velora-queue.conf`).
 
 ## Kalau ada yang tidak jalan
 | Gejala | Penyebab umum | Cara cek |
 |---|---|---|
 | Halaman WhatsApp: "Layanan WhatsApp belum dapat dihubungi" | Konektor (terminal 3) tidak hidup / port 3100 | `curl http://127.0.0.1:3100/health` harus `{"status":"ok"}` |
 | QR tidak muncul / status tetap "Memulai" | Konektor baru start atau gagal koneksi internet ke WhatsApp | Lihat output terminal 3; tunggu ±10 dtk |
-| Pesan masuk tetapi tidak dibalas, status "Diterima, menunggu diproses" | `queue:work` (terminal 2) tidak hidup | Jalankan terminal 2 |
+| Pesan masuk tetapi tidak dibalas, status "Diterima, menunggu diproses" | `queue:work` (terminal 2) tidak hidup, atau dijalankan tanpa `--queue=ai,whatsapp,default` | Jalankan terminal 2 dengan perintah di atas |
 | "Tidak dijawab: bot belum aktif" / "langganan tidak aktif" | Status bot masih Draft / langganan belum diaktifkan | Langkah 2 dan 5 |
 | Pesan tidak muncul sama sekali di Percakapan | Webhook ditolak (secret berbeda) atau URL salah | Terminal 3 mencetak "webhook rejected"/"webhook failed"; samakan secret (tabel di atas) |
 | "AI gagal menjawab" | Kuota/limit API (Groq gratis: 8.000 token/menit; Gemini 3.5-flash kuota akun) atau key salah | `php artisan ai:ping`; lihat `storage/logs/laravel.log` (`ai.call`) |

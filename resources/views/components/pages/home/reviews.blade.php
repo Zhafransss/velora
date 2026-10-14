@@ -1,4 +1,3 @@
-<script src="//unpkg.com/alpinejs" defer></script>
 
 <section id="reviews" class="relative overflow-hidden bg-white py-16 sm:py-20"
   data-aos="fade-up" data-aos-duration="1000">

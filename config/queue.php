@@ -40,7 +40,9 @@ return [
             'connection' => env('DB_QUEUE_CONNECTION'),
             'table' => env('DB_QUEUE_TABLE', 'jobs'),
             'queue' => env('DB_QUEUE', 'default'),
-            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 90),
+            // HARUS lebih besar dari $timeout job terpanjang (ProcessInboundMessage = 120 dtk). Bila lebih kecil, job yang
+            // masih berjalan dianggap macet dan diambil worker lain: pesan diproses ganda dan kuota meleset.
+            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 180),
             'after_commit' => false,
         ],
 

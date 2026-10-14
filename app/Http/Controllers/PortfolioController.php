@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Portfolio;
+use App\Support\Media;
 use Illuminate\Http\Request;
 
 class PortfolioController extends Controller
@@ -28,7 +29,7 @@ class PortfolioController extends Controller
                 'title' => $p->title,
                 'tag' => $p->tag ?? '',
                 'category' => $p->category?->slug, // PAKAI SLUG juga
-                'cover_image' => $p->cover_image ? asset('storage/' . ltrim($p->cover_image, '/')) : asset('images/placeholder.jpg'),
+                'cover_image' => Media::url($p->cover_image, asset('images/placeholder.jpg')),
                 'href' => route('portfolio.show', $p->slug),
                 'category_name' => $p->category?->name,
             ])
@@ -50,7 +51,7 @@ class PortfolioController extends Controller
 
         // siapkan array url screenshot utk Blade
         $screenshots = $portfolio->activeImages
-            ->map(fn($img) => asset('storage/' . ltrim($img->image_path, '/')))
+            ->map(fn($img) => Media::url($img->image_path))
             ->values()
             ->toArray();
 

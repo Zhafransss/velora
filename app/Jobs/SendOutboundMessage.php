@@ -31,11 +31,15 @@ class SendOutboundMessage implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    /** Worker antrean ini tertahan selama jeda anti-blokir konektor (±2–6 dtk per pesan); dipisah dari antrean AI. */
+    public const QUEUE = 'whatsapp';
+
     public int $tries = 1;
     public int $timeout = 90;
 
     public function __construct(public int $tenantId, public int $messageId)
     {
+        $this->onQueue(self::QUEUE);
     }
 
     public function handle(WhatsAppChannelAdapter $adapter, CurrentTenant $context): void

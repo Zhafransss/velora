@@ -1,5 +1,7 @@
 @props([
     'article',
+    // Kartu pertama di grid adalah elemen LCP halaman /articles: dimuat segera, sisanya lazy.
+    'eager' => false,
 ])
 
 <a href="{{ route('articles.show', $article->slug) }}"
@@ -10,8 +12,10 @@
     <div class="relative aspect-[16/10] overflow-hidden bg-slate-100">
 
         <img
-            src="{{ $article->thumbnail ? asset('storage/' . ltrim($article->thumbnail, '/')) : asset('images/placeholder.jpg') }}"
+            src="{{ \App\Support\Media::url($article->thumbnail, asset('images/placeholder.jpg')) }}"
             alt="{{ $article->title }}"
+            @if ($eager) fetchpriority="high" @else loading="lazy" @endif
+            decoding="async"
             class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.06]">
 
         <!-- overlay -->
