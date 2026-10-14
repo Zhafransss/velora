@@ -270,9 +270,14 @@ describe('workspace detail and actions', function () {
         app(QuotaManager::class)->reserve($t, 'k1');
         app(QuotaManager::class)->reserve($t, 'k2');
 
-        Livewire::actingAs(paAdmin())->test(ViewTenant::class, ['record' => $t->getKey()])
-            ->assertSee('Detail Co')->assertSee('detail@example.com')->assertSee('owner')
-            ->assertSee('MEDIUM · active')->assertSee('2 / 1000');
+        $admin = paAdmin();
+        Livewire::actingAs($admin)->test(ViewTenant::class, ['record' => $t->getKey()])
+            ->assertSee('Detail Co')->assertSee('MEDIUM · active')->assertSee('2 / 1000');
+
+        // Anggota tampil di tabel "Akun & anggota" (relation manager) pada halaman yang sama.
+        Livewire::actingAs($admin)
+            ->test(\App\Filament\Resources\Tenants\RelationManagers\MembersRelationManager::class, ['ownerRecord' => $t, 'pageClass' => ViewTenant::class])
+            ->assertSee('detail@example.com')->assertSee('owner');
     });
 
     it('activates a subscription from the panel, audited under the admin', function () {

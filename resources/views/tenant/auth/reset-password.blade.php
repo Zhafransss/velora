@@ -15,8 +15,7 @@
         <input id="password" name="password" type="password" required autocomplete="new-password">
         @error('password')<div class="err">{{ $message }}</div>@enderror
 
-        <label for="password_confirmation">Ulangi password</label>
-        <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password">
+        @include('tenant.auth.partials.password-confirmation')
 
         <button class="btn block" type="submit">Simpan password</button>
     </form>

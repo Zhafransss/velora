@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Tenant\Auth\AccountInvitationController;
 use App\Http\Controllers\Tenant\Auth\EmailVerificationController;
 use App\Http\Controllers\Tenant\Auth\LoginController;
 use App\Http\Controllers\Tenant\Auth\PasswordResetController;
@@ -30,6 +31,10 @@ Route::middleware('guest')->group(function () {
     Route::post('/forgot-password', [PasswordResetController::class, 'email'])->middleware('throttle:5,1')->name('password.email');
     Route::get('/reset-password/{token}', [PasswordResetController::class, 'reset'])->name('password.reset');
     Route::post('/reset-password', [PasswordResetController::class, 'update'])->name('password.update');
+
+    // Undangan akun dari admin platform (DEC-20): penerima membuat password sendiri.
+    Route::get('/invitation/{token}', [AccountInvitationController::class, 'show'])->name('invitation.show');
+    Route::post('/invitation', [AccountInvitationController::class, 'store'])->middleware('throttle:10,1')->name('invitation.store');
 });
 
 Route::middleware('auth')->group(function () {
@@ -42,8 +47,8 @@ Route::middleware('auth')->group(function () {
         ->middleware('throttle:3,1')->name('verification.send');
 });
 
-// Wajib login + email terverifikasi + punya workspace aktif.
-Route::middleware(['auth', 'verified', 'tenant'])->prefix('app')->name('app.')->group(function () {
+// Wajib login + akun aktif + email terverifikasi + punya workspace aktif.
+Route::middleware(['auth', 'active', 'verified', 'tenant'])->prefix('app')->name('app.')->group(function () {
     Route::get('/', Dashboard::class)->name('dashboard');
     Route::view('/subscription', 'tenant.subscription')->name('subscription');
     // Tanpa gerbang langganan: pemilik harus tetap bisa membaca peringatan "langganan berakhir" (DEC-16).

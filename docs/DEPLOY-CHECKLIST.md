@@ -23,6 +23,9 @@ Untuk debugging: `php artisan optimize:clear`.
 | # | Item | Nilai | Catatan |
 |---|---|---|---|
 | 1 | `.env` produksi | `APP_ENV=production`, `APP_DEBUG=false`, `LOG_LEVEL=info` (atau hapus baris; default produksi = info) | TD-07 |
+| 1b | **`APP_URL` = domain produksi** | `APP_URL=https://veloradigitalworks.com` (tanpa `/` di akhir) | Tautan di email (verifikasi, reset password, **undangan akun**) memakai `APP_URL` bila dikirim dari CLI/antrean. Salah isi = tautan ke alamat lain (kejadian 2026-10-14: `.env` lokal berisi domain produksi → undangan dari lokal mengarah ke produksi dan 404). **Di lokal** isi `http://127.0.0.1:8000` |
+| 1c | `MAIL_EHLO_DOMAIN` | `veloradigitalworks.com` | Nama host yang diperkenalkan ke server SMTP. Tanpa ini diambil dari `APP_URL` (di lokal jadi `127.0.0.1`, bisa ditolak server email) |
+| 1a | Email (SMTP) | `MAIL_MAILER=smtp` + kredensial, `MAIL_FROM_ADDRESS=team@veloradigitalworks.com` | Wajib: verifikasi email, reset password, dan **undangan akun dari admin** (DEC-20) dikirim lewat email |
 | 2 | Cookie sesi | Biarkan `SESSION_SECURE_COOKIE` tidak diisi; isi `true` bila TLS diakhiri proxy (mis. Cloudflare Flexible) | Lihat `.env.example` |
 | 3 | PHP | 8.3+, OPcache aktif (`opcache.enable=1`, `opcache.memory_consumption=128`, `opcache.max_accelerated_files=20000`) | Hostinger: hPanel → PHP Configuration |
 | 4 | Kompresi & cache browser | Sudah di `.htaccess` (Apache/LiteSpeed). **[VPS]** Nginx: lihat bagian 3 | CSS/JS 1 tahun (berversi), gambar 30 hari |

@@ -32,9 +32,9 @@ it('does not add tenancy columns to website tables', function (string $table) {
         ->and(Schema::hasColumn($table, 'tenant_id'))->toBeFalse();
 })->with(['categories', 'portfolios', 'portfolio_images', 'services', 'service_packages', 'service_features', 'articles', 'contact_messages', 'invoices']);
 
-it('only extends the users table with is_platform_admin and admin MFA columns', function () {
+it('only extends the users table with is_platform_admin, admin MFA columns and disabled_at', function () {
     expect(Schema::getColumnListing('users'))->toEqualCanonicalizing([
-        'id', 'name', 'email', 'email_verified_at', 'password', 'is_platform_admin',
+        'id', 'name', 'email', 'email_verified_at', 'disabled_at', 'password', 'is_platform_admin',
         'app_authentication_secret', 'app_authentication_recovery_codes',
         'remember_token', 'created_at', 'updated_at',
     ]);

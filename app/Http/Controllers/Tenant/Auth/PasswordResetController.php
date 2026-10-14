@@ -39,7 +39,7 @@ class PasswordResetController extends Controller
             'token' => ['required'],
             'email' => ['required', 'email'],
             'password' => ['required', 'confirmed', PasswordRule::defaults()],
-        ]);
+        ], PasswordMessages::MESSAGES);
 
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),

@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Tenants\Schemas;
 use App\Models\Bot;
 use App\Models\Tenant;
 use App\Support\Admin\TenantInsights;
-use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -24,13 +23,7 @@ class TenantInfolist
                 TextEntry::make('created_at')->label('Terdaftar')->dateTime('d M Y H:i'),
             ]),
 
-            Section::make('Pemilik & anggota')->components([
-                RepeatableEntry::make('members')->hiddenLabel()->columns(3)->components([
-                    TextEntry::make('user.name')->label('Nama'),
-                    TextEntry::make('user.email')->label('Email')->copyable(),
-                    TextEntry::make('role')->label('Peran')->badge(),
-                ]),
-            ]),
+            // Pemilik & anggota: tabel "Akun & anggota" (MembersRelationManager) di bawah halaman ini.
 
             Section::make('Langganan')->columns(3)->components([
                 TextEntry::make('current_plan')->label('Paket')

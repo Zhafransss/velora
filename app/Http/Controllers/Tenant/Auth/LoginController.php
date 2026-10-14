@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tenant\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,11 +35,16 @@ class LoginController extends Controller
             ]);
         }
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (! Auth::attemptWhen($credentials, fn (User $user) => ! $user->isDisabled(), $request->boolean('remember'))) {
             RateLimiter::hit($throttleKey);
 
+            // Status "dinonaktifkan" hanya diberitahukan kepada yang tahu password-nya, agar tidak membuka daftar akun.
+            $user = Auth::getLastAttempted();
+            $disabled = $user instanceof User && $user->isDisabled()
+                && Auth::getProvider()->validateCredentials($user, $credentials);
+
             throw ValidationException::withMessages([
-                'email' => 'Email atau password salah.',
+                'email' => $disabled ? 'Akun ini dinonaktifkan. Hubungi admin Velora.' : 'Email atau password salah.',
             ]);
         }
 

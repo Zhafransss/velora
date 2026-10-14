@@ -54,9 +54,16 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     {
         return [
             'email_verified_at' => 'datetime',
+            // Hanya diubah lewat WorkspaceAccountService (tidak mass assignable).
+            'disabled_at' => 'datetime',
             'password' => 'hashed',
             'is_platform_admin' => 'boolean',
         ];
+    }
+
+    public function isDisabled(): bool
+    {
+        return $this->disabled_at !== null;
     }
 
     public function tenants(): BelongsToMany

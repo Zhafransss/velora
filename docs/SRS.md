@@ -212,7 +212,7 @@ Menyimpan channel, tenant, identitas pelanggan yang diperlukan, isi pesan, state
 Di `/app` (Blade + Livewire): ringkasan penggunaan dan status kanal, kelola profil, knowledge base, konfigurasi AI, koneksi WhatsApp (QR/status), tes chatbot, riwayat percakapan.
 
 ### FR-014 Platform admin (M)
-Filament `/admin` khusus admin platform: tenant, plan, entitlement, subscription (termasuk pencatatan penagihan manual), usage, status koneksi, failed jobs, audit log. Tindakan administratif penting dicatat.
+Filament `/admin` khusus admin platform: tenant, plan, entitlement, subscription (termasuk pencatatan penagihan manual), usage, status koneksi, failed jobs, audit log. Tindakan administratif penting dicatat. Termasuk pengelolaan **akun workspace** (buat + undang via email, ubah, nonaktifkan, hapus permanen; DEC-20) — *ditambahkan 2026-10-14 atas permintaan pemilik produk*.
 
 ### FR-015 Reliability (M)
 Queue dengan retry terkontrol, idempotency, penanganan failed job, logging dengan request ID, webhook/endpoint internal ringan sementara AI berjalan di antrean.
@@ -303,6 +303,7 @@ Dicatat di RTM bagian Hutang Teknis. Yang **harus** selesai sebelum ada pengguna
 | DEC-17 | 2026-10-12 | Auth state Baileys disimpan di **MySQL terenkripsi** (enkripsi aplikasi AES-256-GCM, kunci di luar database), bukan direktori file. | Menutup OQ-07 |
 | DEC-18 | 2026-10-12 | Tenggat proyek **tidak ditentukan**. | Menutup OQ-08 |
 | DEC-19 | 2026-10-14 | Gambar konten website yang diunggah admin (artikel, portofolio, layanan) disimpan di **Cloudflare R2** (`MEDIA_DISK=r2`), bukan di disk hosting. Alasan: upload di Hostinger tidak otomatis muncul di `public_html/storage`, ukuran halaman (NFR-001), egress gratis. Runbook: `docs/DEPLOY-CHECKLIST.md` bagian 6. | Keputusan pemilik produk |
+| DEC-20 | 2026-10-14 | Akun workspace dikelola admin platform di `/admin` (menu Akun + tabel anggota di detail Workspace). Admin membuat akun di workspace **aktif** (bukan yang ditangguhkan) dengan peran owner/admin/viewer; **password dibuat sendiri oleh pemilik akun lewat tautan undangan email** (berlaku 72 jam; admin tidak pernah tahu password). "Hapus" = **nonaktifkan** (blokir login, putus sesi, bisa diaktifkan lagi) atau **hapus permanen**; owner aktif terakhir tidak bisa dihapus/diturunkan. Akun admin platform **tidak** dikelola di sini. Owner mengelola tim sendiri di `/app` belum termasuk. | Keputusan pemilik produk (perluasan FR-014) |
 
 ---
 
