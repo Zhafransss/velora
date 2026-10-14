@@ -342,6 +342,14 @@ describe('backup:key and schedule', function () {
             ->and($events->first(fn ($e) => str_contains($e->command, 'backup:verify'))->expression)->toBe('30 4 * * 0');
     });
 
+    it('runs scheduled jobs on Jakarta time, so the 01:30 backup is at night in Indonesia (not 08:30 WIB)', function () {
+        $backup = collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events())
+            ->first(fn ($e) => str_contains($e->command, 'backup:run'));
+
+        expect($backup->timezone)->toBe('Asia/Jakarta')
+            ->and($backup->nextRunDate(now()->setTimezone('UTC')->setTime(17, 0))->setTimezone('UTC')->format('H:i'))->toBe('18:30');
+    });
+
     it('ships a local-only disk by default and an S3 disk when a bucket is configured', function () {
         expect(config('filesystems.disks.backup.driver'))->toBe('local');
     });

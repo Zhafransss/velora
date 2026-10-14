@@ -3,6 +3,9 @@
 Terakhir diperbarui: 2026-10-14. Dasar angka: audit performa 2026-10-13 (Lighthouse mobile + pengukuran server lokal).
 Berlaku untuk hosting sekarang (Hostinger, `public_html`) dan VPS (SRS DEC-02). Langkah bertanda **[VPS]** hanya untuk VPS.
 
+> **2026-10-14 (DEC-21): produksi pindah ke VPS Contabo — ikuti `docs/DEPLOY-VPS.md`.** Langkah khusus Hostinger
+> (`public_html`, salin aset manual) tidak berlaku lagi untuk website; Hostinger hanya untuk email.
+
 ## 1. Setiap deploy
 
 | # | Langkah | Perintah / cara | Kenapa |
