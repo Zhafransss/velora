@@ -8,7 +8,7 @@
         <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
 
             @forelse ($articles as $article)
-                <x-pages.articles.article-card :article="$article" />
+                <x-pages.articles.article-card :article="$article" :eager="$loop->first" />
             @empty
                 <div
                     class="col-span-full rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-12 text-center text-slate-600">

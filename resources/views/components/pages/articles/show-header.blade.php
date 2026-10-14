@@ -33,8 +33,9 @@
 
             <div class="relative aspect-[16/9] bg-slate-100">
                 <img
-                    src="{{ $article->thumbnail ? asset('storage/' . ltrim($article->thumbnail, '/')) : asset('images/placeholder.jpg') }}"
+                    src="{{ \App\Support\Media::url($article->thumbnail, asset('images/placeholder.jpg')) }}"
                     alt="{{ $article->title }}"
+                    fetchpriority="high" decoding="async"
                     class="h-full max-w-3xl w-full object-cover">
             </div>
 

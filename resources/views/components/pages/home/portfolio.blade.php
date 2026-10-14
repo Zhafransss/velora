@@ -66,7 +66,7 @@
 
             <div class="relative aspect-[16/10] overflow-hidden bg-slate-100" style="border-radius:0 !important;">
                 <img
-                    src="{{ $item->cover_image ? asset('storage/' . ltrim($item->cover_image, '/')) : asset('images/placeholder.jpg') }}"
+                    src="{{ \App\Support\Media::url($item->cover_image, asset('images/placeholder.jpg')) }}"
                     alt="{{ $item->title }}"
                     loading="lazy"
                     decoding="async"

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Tenants\Tables;
 
+use App\Models\Channel;
 use App\Models\Subscription;
 use App\Models\Tenant;
 use App\Support\Admin\TenantInsights;
@@ -16,7 +17,12 @@ class TenantsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['members.user', 'currentSubscription']))
+            // Semua data per baris dimuat sekaligus untuk satu halaman tabel (tanpa N+1): langganan, pemakaian hari ini,
+            // dan status kanal (subquery; model Channel ber-scope tenant sehingga tidak bisa di-eager-load dari admin).
+            ->modifyQueryUsing(fn (Builder $query) => $query
+                ->with(['members.user', 'currentSubscription', 'entitledSubscriptions', 'recentDailyUsage'])
+                ->addSelect(['first_channel_status' => Channel::withoutTenancy()->select('status')
+                    ->whereColumn('channels.tenant_id', 'tenants.id')->orderBy('id')->limit(1)]))
             ->defaultSort('created_at', 'desc')
             ->columns([
                 TextColumn::make('name')->label('Workspace')->searchable()->sortable()
@@ -50,7 +56,7 @@ class TenantsTable
                     }),
 
                 TextColumn::make('channel')->label('WhatsApp')->badge()
-                    ->state(fn (Tenant $t) => TenantInsights::channel($t)?->status ?? 'belum ada')
+                    ->state(fn (Tenant $t) => TenantInsights::channelStatus($t) ?? 'belum ada')
                     ->color(fn (string $state) => match ($state) {
                         'connected' => 'success',
                         'belum ada', 'created' => 'gray',

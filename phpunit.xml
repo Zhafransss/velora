@@ -29,6 +29,11 @@
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="MAIL_MAILER" value="array"/>
+        <!-- Tes tidak boleh menyentuh bucket R2 sungguhan dari .env lokal. -->
+        <env name="MEDIA_DISK" value="public"/>
+        <env name="R2_ACCESS_KEY_ID" value=""/>
+        <env name="R2_SECRET_ACCESS_KEY" value=""/>
+        <env name="R2_BUCKET" value=""/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>

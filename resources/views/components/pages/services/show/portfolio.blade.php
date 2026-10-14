@@ -24,10 +24,9 @@
 
                     <div class="relative aspect-[16/10] overflow-hidden">
 
-                        <img src="{{ $item->cover_image 
-                            ? asset('storage/'.$item->cover_image) 
-                            : asset('images/placeholder.jpg') }}"
+                        <img src="{{ \App\Support\Media::url($item->cover_image, asset('images/placeholder.jpg')) }}"
                              alt="{{ $item->title }}"
+                             loading="lazy" decoding="async"
                              class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.05]">
 
                         <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>

@@ -32,11 +32,15 @@ class ProcessInboundMessage implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    /** Antrean sendiri agar pengiriman WhatsApp (yang menunggu jeda anti-blokir) tidak menahan pemrosesan AI. */
+    public const QUEUE = 'ai';
+
     public int $tries = 1;
     public int $timeout = 120;
 
     public function __construct(public int $tenantId, public int $messageId)
     {
+        $this->onQueue(self::QUEUE);
     }
 
     public function handle(QuotaManager $quota, PromptBuilder $builder, AiGateway $gateway, CurrentTenant $context): void

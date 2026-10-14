@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Services\Schemas;
 
-use Filament\Forms\Components\FileUpload;
+use App\Filament\Forms\OptimizedImageUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -45,12 +45,10 @@ class ServiceForm
                         ->label('Hero Description')
                         ->rows(6),
 
-                    FileUpload::make('hero_image')
+                    OptimizedImageUpload::make('hero_image')
                         ->label('Hero Image')
                         ->image()
-                        ->disk('public')
                         ->directory('services')
-                        ->visibility('public')
                         ->imageEditor(),
                 ]),
 

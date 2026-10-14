@@ -65,6 +65,7 @@
 
                         <div class="relative aspect-[3/4] overflow-hidden ">
                             <img src="{{ $img }}" alt="Screenshot {{ $portfolio->title }}"
+                                @if ($loop->first) fetchpriority="high" @else loading="lazy" @endif decoding="async"
                                 class="h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.02]">
 
                             <div

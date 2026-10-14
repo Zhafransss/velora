@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Tenancy\TenantScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -40,6 +41,22 @@ class Tenant extends Model
     public function currentSubscription(): HasOne
     {
         return $this->hasOne(Subscription::class)->latestOfMany();
+    }
+
+    /** Langganan berstatus layak (trialing/active), terbaru dulu. Masa berlaku diperiksa di PHP (Subscription::isEntitled). */
+    public function entitledSubscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class)->whereIn('status', Subscription::ENTITLED_STATUSES)->latest('id');
+    }
+
+    /**
+     * Pemakaian AI beberapa hari terakhir, untuk eager loading di panel admin (di luar konteks tenant). Scope tenant
+     * sengaja dilepas karena relasi ini sudah dibatasi ke tenant_id model ini; rentang 2 hari menutup perbedaan zona waktu.
+     */
+    public function recentDailyUsage(): HasMany
+    {
+        return $this->hasMany(DailyUsage::class)->withoutGlobalScope(TenantScope::class)
+            ->where('usage_date', '>=', now()->subDays(2)->toDateString());
     }
 
     /** Gerbang akses fitur: tenant harus aktif DAN punya langganan yang layak. */

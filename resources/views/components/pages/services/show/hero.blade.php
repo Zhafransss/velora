@@ -71,7 +71,7 @@
         <div class="relative overflow-hidden p-6  shadow-2xl">
             <div class=" relative aspect-[4/3] w-full overflow-hidden rounded-2xl  p-6">
                 @if ($service->hero_image)
-                    <img src="{{ asset('storage/' . $service->hero_image) }}"
+                    <img src="{{ \App\Support\Media::url($service->hero_image) }}"
                         alt="{{ $service->category->name }}"
                         class="h-full w-full object-contain transition duration-500 hover:scale-[1.02]">
                 @else

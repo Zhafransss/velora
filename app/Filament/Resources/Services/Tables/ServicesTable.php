@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Services\Tables;
 
+use App\Support\Media;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -27,7 +28,7 @@ class ServicesTable
 
                 ImageColumn::make('hero_image')
                     ->label('Hero Image')
-                    ->disk('public')
+                    ->disk(Media::disk())
                     ->visibility('public'),
 
                 IconColumn::make('is_popular')

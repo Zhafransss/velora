@@ -36,9 +36,24 @@ class TenantInsights
         return Channel::withoutTenancy()->where('tenant_id', $tenant->id)->orderBy('id')->first();
     }
 
+    /** Status kanal pertama; memakai kolom subquery `first_channel_status` dari tabel admin bila tersedia (tanpa N+1). */
+    public static function channelStatus(Tenant $tenant): ?string
+    {
+        return array_key_exists('first_channel_status', $tenant->getAttributes())
+            ? $tenant->getAttribute('first_channel_status')
+            : self::channel($tenant)?->status;
+    }
+
     public static function usageToday(Tenant $tenant): int
     {
-        return app(QuotaManager::class)->used($tenant);
+        if (! $tenant->relationLoaded('recentDailyUsage')) {
+            return app(QuotaManager::class)->used($tenant);
+        }
+
+        // "Hari ini" menurut zona waktu tenant, sama dengan QuotaManager.
+        $today = app(QuotaManager::class)->dateFor($tenant);
+
+        return (int) $tenant->recentDailyUsage->first(fn ($u) => $u->usage_date->toDateString() === $today)?->used;
     }
 
     /** null = tanpa batas keras; 0 = tidak ada langganan layak */

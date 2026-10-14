@@ -26,21 +26,22 @@ class ConversationHistory extends Component
     public function select(int $id): void
     {
         // Hanya percakapan di dalam jendela riwayat paket yang boleh dibuka (id di luar jendela = 404).
-        $this->selected = $this->visibleConversations()->findOrFail($id)->id;
+        $this->selected = $this->visibleConversations($this->entitlements()->historySince())->findOrFail($id)->id;
     }
 
     public function render()
     {
-        $entitlements = Entitlements::forTenant(app(CurrentTenant::class)->get());
+        // Dihitung sekali per render (halaman ini polling tiap beberapa detik).
+        $entitlements = $this->entitlements();
         $since = $entitlements->historySince();
 
-        $conversations = $this->visibleConversations()->with('channel')->orderByDesc('last_message_at')->orderByDesc('id')->limit(self::LIST_LIMIT)->get();
+        $conversations = $this->visibleConversations($since)->with('channel')->orderByDesc('last_message_at')->orderByDesc('id')->limit(self::LIST_LIMIT)->get();
 
         $current = null;
         $messages = collect();
 
         if ($this->selected !== null) {
-            $current = $this->visibleConversations()->findOrFail($this->selected);
+            $current = $this->visibleConversations($since)->findOrFail($this->selected);
             $messages = $current->messages()
                 ->when($since, fn ($q) => $q->where('created_at', '>=', $since))
                 ->orderByDesc('id')->limit(self::MESSAGE_LIMIT)->get()->reverse()->values();
@@ -56,11 +57,14 @@ class ConversationHistory extends Component
         ])->layout('tenant.layouts.app', ['title' => 'Percakapan']);
     }
 
-    /** Percakapan yang boleh dilihat menurut entitlement paket (jendela riwayat). */
-    private function visibleConversations(): Builder
+    private function entitlements(): Entitlements
     {
-        $since = Entitlements::forTenant(app(CurrentTenant::class)->get())->historySince();
+        return Entitlements::forTenant(app(CurrentTenant::class)->get());
+    }
 
+    /** Percakapan yang boleh dilihat menurut entitlement paket (jendela riwayat sejak $since; null = tanpa jendela). */
+    private function visibleConversations(?\Carbon\CarbonInterface $since): Builder
+    {
         return Conversation::query()->when($since, fn (Builder $q) => $q->where(
             fn (Builder $w) => $w->where('last_message_at', '>=', $since)
                 ->orWhere(fn (Builder $n) => $n->whereNull('last_message_at')->where('created_at', '>=', $since))

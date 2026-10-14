@@ -11,7 +11,7 @@
                 <div class="flex items-center gap-3">
                     <div class="h-16 w-16 rounded-2xl overflow-hidden bg-white/5 ring-1 ring-white/10">
                         <img src="{{ asset('images/veloradigital.webp') }}" alt="Velora Digital Logo"
-                            class="h-full w-full object-cover">
+                            loading="lazy" decoding="async" class="h-full w-full object-cover">
                     </div>
                     <div class="leading-none">
                         <div class="text-sm font-extrabold tracking-wide">Velora Digital</div>

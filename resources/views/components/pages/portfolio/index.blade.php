@@ -131,6 +131,7 @@
 
                         <div class="relative aspect-[16/10] overflow-hidden !rounded-none ">
                             <img src="{{ $item['cover_image'] }}" alt="{{ $item['title'] }}"
+                                @if ($loop->first) fetchpriority="high" @else loading="lazy" @endif decoding="async"
                                 class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" style="border-radius:0 !important;">
 
                             <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent">

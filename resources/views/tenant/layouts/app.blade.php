@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>{{ $title ?? trim($__env->yieldContent('title', 'Dashboard')) }} | Velora AI</title>
-    <link rel="stylesheet" href="{{ asset('css/tenant.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/tenant.css') }}?v={{ @filemtime(public_path('css/tenant.css')) ?: 1 }}">
     @livewireStyles
 </head>
 <body>
