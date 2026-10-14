@@ -67,6 +67,10 @@ return [
 
     'timezone' => 'UTC',
 
+    // Jam pada routes/console.php (backup 01:30, retensi 02:30, notifikasi 08:00) dimaksudkan WIB. Tanpa ini
+    // penjadwal memakai UTC: backup berjalan 08:30 WIB di jam sibuk.
+    'schedule_timezone' => env('SCHEDULE_TIMEZONE', 'Asia/Jakarta'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration
