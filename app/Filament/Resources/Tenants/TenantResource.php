@@ -37,6 +37,11 @@ class TenantResource extends Resource
         return TenantsTable::configure($table);
     }
 
+    public static function getRelations(): array
+    {
+        return [RelationManagers\MembersRelationManager::class];
+    }
+
     public static function getPages(): array
     {
         return [

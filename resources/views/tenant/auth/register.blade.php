@@ -22,8 +22,7 @@
         <input id="password" name="password" type="password" required autocomplete="new-password">
         @error('password')<div class="err">{{ $message }}</div>@enderror
 
-        <label for="password_confirmation">Ulangi password</label>
-        <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password">
+        @include('tenant.auth.partials.password-confirmation')
 
         @if ($recaptchaSiteKey)
             <div class="g-recaptcha" data-sitekey="{{ $recaptchaSiteKey }}" style="margin-top:12px"></div>

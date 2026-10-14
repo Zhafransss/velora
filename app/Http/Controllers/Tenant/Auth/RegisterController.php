@@ -36,7 +36,7 @@ class RegisterController extends Controller
             'email' => ['required', 'string', 'email:rfc', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::defaults()],
             'g-recaptcha-response' => [$recaptcha->enabled() ? 'required' : 'nullable', 'string'],
-        ], [
+        ], PasswordMessages::MESSAGES + [
             'g-recaptcha-response.required' => 'Silakan centang "Saya bukan robot" terlebih dahulu.',
         ]);
 

@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'tenant' => \App\Http\Middleware\SetCurrentTenant::class,
             'subscribed' => \App\Http\Middleware\EnsureSubscribed::class,
+            'active' => \App\Http\Middleware\EnsureAccountActive::class,
         ]);
 
         $middleware->redirectUsersTo('/app');

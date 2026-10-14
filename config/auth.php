@@ -97,6 +97,15 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
+
+        // Undangan akun dari admin platform (WorkspaceAccountService): penerima membuat password sendiri.
+        // Tabel terpisah agar token reset biasa tidak berlaku di halaman undangan dan sebaliknya.
+        'invites' => [
+            'provider' => 'users',
+            'table' => 'account_invitation_tokens',
+            'expire' => 72 * 60,
+            'throttle' => 60,
+        ],
     ],
 
     /*

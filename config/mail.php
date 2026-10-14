@@ -45,7 +45,9 @@ return [
             'port' => env('MAIL_PORT', 2525),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
-            'timeout' => null,
+            // Tanpa batas, PHP menunggu 60 dtk bila server SMTP tidak terjangkau (mis. ISP memblokir port SMTP)
+            // dan admin/pengguna melihat halaman menggantung. SMTP sehat tersambung < 1 dtk.
+            'timeout' => (int) env('MAIL_TIMEOUT', 10),
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 

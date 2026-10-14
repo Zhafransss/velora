@@ -61,6 +61,7 @@ class AppServiceProvider extends ServiceProvider
         // Tanpa ini, konteks tenant dan gerbang langganan HILANG pada aksi komponen.
         \Livewire\Livewire::addPersistentMiddleware([
             \Illuminate\Auth\Middleware\Authenticate::class,
+            \App\Http\Middleware\EnsureAccountActive::class,
             \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
             \App\Http\Middleware\SetCurrentTenant::class,
             \App\Http\Middleware\EnsureSubscribed::class,
